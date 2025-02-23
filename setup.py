@@ -1,10 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="BenchNLP",
+    name="EvalXAI",
     version="0.1.0",
     description="NLP Explainability Benchmarking Framework",
-    author="Your Name",
+    author="Kafaite Zahra Hussain",
+    author_email="kafait.e.zahra@gmail.com",
+    url="https://github.com/kafaite24/EvalXAI",
     packages=find_packages(),
     install_requires=[
         "torch",
@@ -19,8 +21,5 @@ setup(
         "numpy",
         "pandas",
         "seaborn"
-    ],
-    entry_points={
-        "console_scripts": ["explainer-benchmark=BenchNLP.cli:main"],
-    },
+    ]
 )
