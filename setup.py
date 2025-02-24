@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="EvalXAI",
-    version="0.2.0",
+    version="0.1.0",
     description="NLP Explainability Benchmarking Framework",
     author="Kafaite Zahra Hussain",
     author_email="kafait.e.zahra@gmail.com",
