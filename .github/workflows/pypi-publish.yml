@@ -1,13 +1,13 @@
 name: Upload Python Package to PyPI
 
-# on:
-#   release:
-#     types: [created]  # Runs when a new GitHub Release is created
-
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [created]  # Runs when a new GitHub Release is created
+
+# on:
+#   push:
+#     branches:
+#       - main
       
 permissions:
   contents: read
