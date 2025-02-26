@@ -4,10 +4,12 @@ setup(
     name="EvalXAI",
     version="0.1.0",
     description="NLP Explainability Benchmarking Framework",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     author="Kafaite Zahra Hussain",
     author_email="kafait.e.zahra@gmail.com",
     url="https://github.com/kafaite24/EvalXAI",
-    packages=find_packages(),
+    packages=find_packages(include=["evalxai", "evalxai.*"]),  # Explicitly include subpackages
     install_requires=[
         "torch",
         "transformers",
@@ -15,11 +17,14 @@ setup(
         "scikit-learn",
         "matplotlib",
         "datasets",
-        "typing",
-        "copy",
-        "typing",
         "numpy",
         "pandas",
-        "seaborn"
-    ]
+        "seaborn",
+    ],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.6",
 )
