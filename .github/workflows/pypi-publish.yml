@@ -4,6 +4,11 @@ on:
   release:
     types: [created]  # Runs when a new GitHub Release is created
 
+# on:
+#   push:
+#     branches:
+#       - main
+      
 permissions:
   contents: read
 
@@ -29,5 +34,5 @@ jobs:
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: "__token__"
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN_EVALXAI_V2 }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: twine upload dist/*
