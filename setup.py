@@ -4,7 +4,7 @@ setup(
     name="EvalXAI",
     version="0.1.0",
     description="NLP Explainability Benchmarking Framework",
-    long_description=open("README.md").read(),
+    long_description=open("Readme.md").read(),
     long_description_content_type="text/markdown",
     author="Kafaite Zahra Hussain",
     author_email="kafait.e.zahra@gmail.com",
