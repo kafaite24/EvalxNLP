@@ -19,9 +19,9 @@ This framework provides tools for generating and evaluating explanations for NLP
 
 ## Introduction
 
-This is an easy-to-use yet comprehensive toolbox for quantitative evaluation of explanations from different post-hoc explainers in NLP domain. 
+EvalXAI is an easy-to-use yet comprehensive toolbox that enables the quantitative evaluation, comparison, and benchmarking of post-hoc explainable AI methods, particularly feature attribution methods. It offers a comprehensive, end-to-end pipeline to assess the performance and reliability of these explanation methods.
 
-## Explainers
+### Explainers
 
 This project supports several explanation methods to help understand the model’s predictions. Each method attributes importance to input features (tokens) in different ways:
 
@@ -51,78 +51,115 @@ A model-agnostic method that explains predictions by approximating the model wit
 This library aims to aggregate and implement evaluation metrics from the XAI literature to automate XAI quantification. These metrics generally fall into one of four main categories: faithfulness, robustness, plausibility, complexity. Our library provides implementations of the following evaluation metrics:
 
 #### Faithfulness:
+
 Measures how well the explanations reflect the model’s predictive behavior.
 
 **Soft Comprehensiveness** [https://aclanthology.org/2023.acl-long.261/](Zhao and Aletras, 2023)
 
 **Soft Sufficiency** [https://aclanthology.org/2023.acl-long.261/](Zhao and Aletras, 2023)
 
-**FAD and N-AUC** [https://aclanthology.org/2022.bionlp-1.33/](Ngai and Rudzicz, 2022,)
+**FAD and N-AUC** [https://aclanthology.org/2022.bionlp-1.33/](Ngai and Rudzicz, 2022)
 
-**AUC-TP**
+**AUC-TP** [https://arxiv.org/abs/2009.13295] (Atanasova,2020)
 Computes the area under the curve where the x-axis is the proportion of features removed and the y-axis is the performance change
 
 #### Plausibility:
+
 Assesses how intuitively the explanations align with human understanding.
 
-**Area-Under-Precision-Recall-Curve** (soft score) [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
+**Area-Under-Precision-Recall-Curve** [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
 Evaluates how well the explanation prioritizes truly important tokens based on precision-recall tradeoffs.
 
-**Token F1** (hard score) [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
+**Token F1** [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
 Measures the overlap between predicted important tokens and human-annotated tokens.
 
-**Token Intersection Over Union** [https://aclanthology.org/2020.acl-main.408/](hard score) (DeYoung et al., 2020)
+**Token Intersection Over Union** [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
 Assesses the similarity between explanation token sets and ground-truth annotations.
 
 ### Complexity
+
 Evaluates the conciseness of explanations (fewer features imply higher clarity).
 
 **Sparseness** [https://arxiv.org/abs/1810.06583](Chalasani et al., 2020): uses the Gini Index for measuring, if only highly attributed features are truly predictive of the model output
 
 **Complexity** [https://arxiv.org/abs/2005.00631](Bhatt et al., 2020): computes the entropy of the fractional contribution of all features to the total magnitude of the attribution individually
 
-## Installation
+## Getting Started
 
-To install the necessary dependencies, run the following command:
+### Prerequisites
+
+The project is entirely made in Python 3.9 and tested on Windows 11 64 bits.
+
+### Installation
+
+EvalXAI project can be installed from source using:
+
+1. Clone the repo
+
+```bash
+git clone https://github.com/kafaite24/EvalXAI.git
+```
+
+2. Install the requirements
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
+### Usage
 
-### Explain and Evaluate
+#### Explain and Evaluate
 
 Below is the example of how you can use the library in a very simple way to generate explanations of a given input sentence for any explainers you want.
 
-```python
+Initialize the model and tokenizer
 
-model_name= "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-xai_framework = XAIFramework(model_name)
-sentence = "I love your style!"
-#Here you can define whatever explainers you want to generate scores for
-explainer_names=["deepLift","lime","shapiq","shap","guidedbackprop","gradientxinput","integratedgradient"]
-exp= xai_framework.explain(sentence,"positive",explainer_names)
+```python
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
 ```
 
-You can also visualize the scores easily with a single line of code in form of a table.
+Initialize explainers and evaluators that you want
 
 ```python
-xai_framework.visualize(exp)
+from explainers import DeepLiftExplainer, GuidedBackpropExplainer
+from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, FADEvaluator, SparsenessEvaluator
+
+gb= GuidedBackpropExplainer(model,tokenizer)
+dl= DeepLiftExplainer(model,tokenizer)
+
+sc= SoftComprehensivenessEvaluator(model,tokenizer)
+fad= FADEvaluator(model,tokenizer)
+sp= SparsenessEvaluator(model,tokenizer)
+auctp= AUCTPEvaluator(model,tokenizer)
+```
+
+Initialize the Benchmark class
+
+```python
+xai_framework = XAIFramework(model, tokenizer,explainers=[gb,dl], evaluators=[auprc,auctp,sc,fad,sp,cx,iou])
+```
+
+Explain and visualize the scores
+
+```python
+sentence = "I love the product, but the customer service was terrible."
+exps= xai_framework.explain(input_data=sentence,target_label="negative")
+xai_framework.visualize(exps)
+
 ```
 
 You can evaluate these explanations for the defined evaluation metrics as follows.
 You have the flexibility to define the explainers and evaluators you want the results for.
 
 ```python
-xai_framework.evaluate_single_sentence(sentence,
-                       explainer_names=["deeplift","gradientxinput",
-                                        "lime","shapiq","shap","guidedbackprop","integratedgradient"],
-                       evaluator_names=["softcomprehensiveness","softsufficiency","fad","auprc","iou","complexity","sparseness"],
-                        human_rationale=[0, 1, 0, 0, 0])
+xai_framework.evaluate_single_sentence(sentence, target_label="negative", human_rationale=[0, 1, 0, 1, 0,0,0,0,1,0,1,0])
 ```
 
-### Loading the Dataset
+#### Loading the Dataset
 
 First, load your dataset using the [load_fields_from_dataset] function as follows. You can load a huggingface model or csv/excel file.
 
@@ -143,34 +180,14 @@ dataset_args_ = LoadDatasetArgs( # Path to the dataset file
 input_texts, labels, rationale = xai_framework.load_fields_from_dataset(dataset_args_)
 ```
 
-### Explain and Benchmark
+#### Explain and Benchmark
 
 With a single line of code, you can explain and evaluate an entire dataset or even sub-samples of it.
 
 ```python
-xai_framework.generate_explainer_table_for_dataset(input_texts, labels,explainer_names=["deeplift"])
+xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rationale_sample)
 ```
 
-## Project Structure
+## Tutorials
 
-```
-.
-├── data
-│   └── ...
-├── src
-│   ├── __init__.py
-│   ├── main.py
-│   └── ...
-├── tests
-│   └── ...
-├── requirements.txt
-└── README.md
-```
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Complete tutorial is available to demonstrate usage of the library for sentiment analysis usecase. Please see notebook in the examples folder.
