@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from evaluators import SoftSufficiencyEvaluator, FADEvaluator, AUPRCEvaluator, SparsenessEvaluator, IOUEvaluator, SoftComprehensivenessEvaluator, ComplexityEvaluator, AUCTPEvaluator
+from evaluators import SoftSufficiencyEvaluator, FADEvaluator, AUPRCEvaluator, SparsenessEvaluator, IOUF1Evaluator,TokenF1Evaluator, SoftComprehensivenessEvaluator, ComplexityEvaluator, AUCTPEvaluator
 from explainers import InputXGradientExplainer, IntegratedGradientsExplainer,DeepLiftExplainer, LimeExplainer, SHAPExplainer, SHAPIQExplainer, GuidedBackpropExplainer
 from explanation import Explanation
 
@@ -42,7 +42,7 @@ class XAIFramework:
             LimeExplainer(self.model, self.tokenizer),
             InputXGradientExplainer(self.model, self.tokenizer, multiply_by_inputs=False),
             InputXGradientExplainer(self.model, self.tokenizer, multiply_by_inputs=True),
-            IntegratedGradientsExplainer(self.model, self.tokenizer, multiply_by_inputs=True),
+            IntegratedGradientsExplainer(self.model, self.tokenizer, multiply_by_inputs=False),
             DeepLiftExplainer(self.model, self.tokenizer),
             SHAPIQExplainer(self.model, self.tokenizer),
             GuidedBackpropExplainer(self.model, self.tokenizer)
@@ -57,7 +57,8 @@ class XAIFramework:
             ComplexityEvaluator(self.model, self.tokenizer),
             SparsenessEvaluator(self.model, self.tokenizer),
             AUPRCEvaluator(self.model, self.tokenizer),
-            IOUEvaluator(self.model, self.tokenizer)
+            IOUF1Evaluator(self.model, self.tokenizer),
+            TokenF1Evaluator(self.model, self.tokenizer)
         ]
 
     def _generate_cache_key(self, model: str, explainer: str, input_text: str, extra_params: Optional[Dict] = None) -> str:
