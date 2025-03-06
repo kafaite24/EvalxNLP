@@ -108,8 +108,8 @@ class XAIFramework:
         """
         try:
             dataset_metrics = self.get_evaluation_metrics(input_texts, labels, rationales, extra_params)
-            self.create_pivot_table(dataset_metrics)
-
+            pivot_table = self.create_pivot_table(dataset_metrics)
+            return pivot_table
         except Exception as e:
             print(f"Error generating explainer table for dataset: {e}")
 

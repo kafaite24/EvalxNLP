@@ -57,6 +57,7 @@ class AUCTPEvaluator:
        
 
         for threshold in thresholds:
+            print(threshold)
             masked_texts = []
             labels = []
             i=0
@@ -124,9 +125,9 @@ class AUCTPEvaluator:
             float: AUC-TP value.
         """
         auc_tp = auc(thresholds, performance_scores)
-        # print(f"auc_tp {auc_tp}")
-        # standardized_auc_tp = auc_tp / total_features
-        return auc_tp
+        normalized_auc_tp = auc_tp / 100  # Normalize to [0, 1]
+        
+        return normalized_auc_tp
 
     def plot_performance(self, thresholds, performance_scores):
         """
@@ -156,7 +157,7 @@ class AUCTPEvaluator:
             dict: A dictionary containing performance scores and AUC-TP.
         """
         explanations = explanations if isinstance(explanations, list) else [explanations]
-        thresholds= [0,10]
+        thresholds= [0,10,20,30,40,50,60,70,80,90,100]
        
         # Evaluate performance across thresholds
         performance_scores = self.evaluate_performance(explanations,thresholds)
