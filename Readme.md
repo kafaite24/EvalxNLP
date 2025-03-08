@@ -1,19 +1,17 @@
-# XAI Framework
-
-This framework provides tools for generating and evaluating explanations for NLP models. It supports various explainers and evaluators, and includes caching mechanisms to optimize performance.
+# EvalXAI Framework
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-  - [Explainers](#Explainers)
-  - [Evaluation Metrics](#Metrics)
+  - [Explainers](#explainers)
+  - [Evaluation Metrics](#metrics)
 - [Getting Started](#getting-started)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Explain and Evaluate](#explain-and-evaluate)
   - [Loading the Dataset](#loading-the-dataset)
   - [Explain and Benchmark](#explain-and-benchmark)
-- [Tutorials](#Tutorials)
+- [Tutorials](#tutorials)
 
 ## Introduction
 
@@ -188,4 +186,10 @@ xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rat
 
 ## Tutorials
 
-Complete tutorial is available to demonstrate usage of the library for sentiment analysis usecase. Please see notebook, [tutorial_sentiment_analysis.ipynb] in the examples folder.
+Further tutorials are available that demonstrate usage of the library for different usecases. Please see notebooks in the examples folder which include:
+
+[Sentiment Analysis example](./examples/tutorial_sentiment_analysis.ipynb)
+
+[Hate Speech Detection example](./examples/tutorial_hate_speech_detection.ipynb)
+
+[Natural Language Inference example](./examples/tutorial_nli.ipynb)
