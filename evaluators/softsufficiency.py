@@ -1,12 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from transformers import BertTokenizerFast, BertForSequenceClassification
 import numpy as np
-from explainers import InputXGradientExplainer
-import os
-from dataset_loaders import MovieReviews
-from tqdm import tqdm
 
 class SoftSufficiencyEvaluator:
     

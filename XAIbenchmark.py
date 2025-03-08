@@ -150,7 +150,36 @@ class XAIFramework:
             print(f"Error computing evaluation metrics: {e}")
             return {}
 
-    def get_feature_importance_for_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]], extra_params: Optional[Dict] = None, split_type: str = "test") -> Dict[str, List[Explanation]]:
+    def process_text_list(self,text_list):
+        """
+        Processes a list of text inputs. If the input is a list of tuples, combines each tuple into a single string using the separator token.
+        If the input is a list of strings, leaves it as is.
+
+        Args:
+            text_list (List[Union[str, Tuple[str, str]]): List of text inputs, which can be strings or tuples of two strings.
+            sep_token (str): Separator token to use when combining tuples. Default is "[SEP]".
+
+        Returns:
+            List[str]: Processed list of strings.
+        """
+        sep_token="[SEP]"
+        processed_texts = []
+
+        for text in text_list:
+            if isinstance(text, str):
+                # If it's a string, add it directly to the list
+                processed_texts.append(text)
+            elif isinstance(text, tuple) and len(text) == 2:
+                # If it's a tuple of two strings, combine them with the separator token
+                combined_text = f"{text[0]} {sep_token} {text[1]}"
+                processed_texts.append(combined_text)
+            else:
+                # Handle unexpected types (optional: raise an error or skip)
+                raise ValueError(f"Unsupported input type: {type(text)}. Expected str or tuple of two strings.")
+
+        return processed_texts
+
+    def get_feature_importance_for_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]]=None, extra_params: Optional[Dict] = None, split_type: str = "test") -> Dict[str, List[Explanation]]:
         """
         Compute feature importance scores for the entire dataset, for all explainer methods.
         Now using the output from xai_framework.load_fields_from_dataset.
@@ -166,15 +195,15 @@ class XAIFramework:
         Returns:
             Dict[str, List[Explanation]]: Dictionary of explanations for each explainer.
         """
-       
+        
+        processed_texts = self.process_text_list(input_texts)
         try:
             all_explanations = {}
-            # all_explanations = {explainer_name: [] for explainer_name in explainer_names}
-            indices = range(len(input_texts))
+            indices = range(len(processed_texts))
 
             for instance_id in indices:
                 print(f"Processing instance {instance_id}")
-                text = input_texts[instance_id]
+                text = processed_texts[instance_id]
                 target_label = labels[instance_id]
                 rationale = rationales[instance_id] if rationales is not None else None
             
@@ -192,6 +221,8 @@ class XAIFramework:
         """
         Retrieve or compute feature importance scores for a given model, explainer, and dataset instance.
         """
+        print(text)
+        print(target_label)
         try:
             all_results = {}
             explainers = self.explainers

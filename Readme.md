@@ -5,17 +5,15 @@ This framework provides tools for generating and evaluating explanations for NLP
 ## Table of Contents
 
 - [Introduction](#introduction)
+  - [Explainers](#Explainers)
+  - [Evaluation Metrics](#Metrics)
+- [Getting Started](#getting-started)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Explain and Evaluate](#explain-and-evaluate)
   - [Loading the Dataset](#loading-the-dataset)
-  - [Generating Explanations](#generating-explanations)
-  - [Evaluating Explanations](#evaluating-explanations)
-  - [Displaying Results](#displaying-results)
-- [Configuration](#configuration)
-- [Examples](#examples)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+  - [Explain and Benchmark](#explain-and-benchmark)
+- [Tutorials](#Tutorials)
 
 ## Introduction
 
@@ -46,7 +44,7 @@ A variant of SHAP designed for classification tasks, refining Shapley value appr
 -**LIME** [https://arxiv.org/abs/1602.04938](Ribeiro et al., 2016)
 A model-agnostic method that explains predictions by approximating the model with a simpler surrogate model in the local neighborhood of the instance.
 
-### Evaluation Metrics
+### Metrics
 
 This library aims to aggregate and implement evaluation metrics from the XAI literature to automate XAI quantification. These metrics generally fall into one of four main categories: faithfulness, robustness, plausibility, complexity. Our library provides implementations of the following evaluation metrics:
 
@@ -190,4 +188,4 @@ xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rat
 
 ## Tutorials
 
-Complete tutorial is available to demonstrate usage of the library for sentiment analysis usecase. Please see notebook in the examples folder.
+Complete tutorial is available to demonstrate usage of the library for sentiment analysis usecase. Please see notebook, [tutorial_sentiment_analysis.ipynb] in the examples folder.
