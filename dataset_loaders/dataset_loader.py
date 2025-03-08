@@ -6,8 +6,9 @@ import numpy as np
 @dataclass
 class LoadDatasetArgs:
     dataset_name: str  # The dataset name, e.g., "imdb", "ag_news"
-    input_text_field: str  # The field containing the input text for classification (e.g., "text")
+    text_field: str  # The field containing the input text for classification (e.g., "text")
     label_field: str  # The field containing the label for classification (e.g., "label")
+    text_field_2: Optional[str]=None
     rationale_field: Optional[str] = None
     dataset_config: Optional[str] = None  # The configuration for the dataset (if any)
     dataset_dir: Optional[str] = None  # Path to the dataset directory (if any)
@@ -28,6 +29,7 @@ def load_fields_from_dataset(dataset_args: LoadDatasetArgs) -> Dict[str, List]:
         Returns:
             Dict[str, List]: A dictionary containing lists of input texts, corresponding labels, and optionally rationales.
         """
+        print('Loading dataset...')
         try:
             dataset = load_dataset(
                 dataset_args.dataset_name,
@@ -43,10 +45,10 @@ def load_fields_from_dataset(dataset_args: LoadDatasetArgs) -> Dict[str, List]:
 
             df = dataset.to_pandas()
 
-            if dataset_args.input_text_field not in df.columns:
-                raise ValueError(f"The input text field '{dataset_args.input_text_field}' does not exist in the dataset.")
+            if dataset_args.text_field not in df.columns:
+                raise ValueError(f"The input text field '{dataset_args.text_field}' does not exist in the dataset.")
 
-            input_texts = list(df[dataset_args.input_text_field])
+            text_field = list(df[dataset_args.text_field])
 
             if dataset_args.label_field not in df.columns:
                 raise ValueError(f"The label field '{dataset_args.label_field}' does not exist in the dataset.")
@@ -56,8 +58,25 @@ def load_fields_from_dataset(dataset_args: LoadDatasetArgs) -> Dict[str, List]:
             rationales = None
             if dataset_args.rationale_field and dataset_args.rationale_field in df.columns:
                 rationales = list(df[dataset_args.rationale_field])
+            
+            text_field_2 = None
+            if dataset_args.text_field_2 and dataset_args.text_field_2 in df.columns:
+                text_field_2 = list(df[dataset_args.text_field_2])
 
-            return input_texts, labels, rationales
+            # Return a dictionary with only the relevant fields
+            result = {
+                "text": text_field,
+                "labels": labels,
+            }
+
+            if rationales is not None:
+                result["rationales"] = rationales
+
+            if text_field_2 is not None:
+                result["text_2"] = text_field_2
+
+            return result
+
         except Exception as e:
             print(f"Error loading fields from dataset: {e}")
             return {}, [], []

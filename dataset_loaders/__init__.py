@@ -1,6 +1,5 @@
 # dataset_loaders/__init__.py
-
-from .movie_reviews import MovieReviews
-from .hatexplain import HateXplain
+from .hatexplain import HateSpeechProcessor
+from .movie_rationales import MovieRationalesProcessor
 from .dataset_loader import LoadDatasetArgs
-__all__ = ["MovieReviews","HateXplain","LoadDatasetArgs"]
+__all__ = ["MovieRationalesProcessor","HateSpeechProcessor","LoadDatasetArgs"]
