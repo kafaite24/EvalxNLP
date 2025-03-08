@@ -165,7 +165,7 @@ from dataset_loaders.dataset_args import LoadDatasetArgs
 dataset_args_ = LoadDatasetArgs( # Path to the dataset file
     # dataset_name= "csv",
     dataset_name="eraser-benchmark/movie_rationales",
-    input_text_field="review",  # Assuming "text" column contains the text data
+    text_field="review",  # Assuming "text" column contains the text data
     label_field="label",  # Assuming "label" column contains the sentiment labels
     rationale_field="evidences",
     dataset_split="test",  # Assuming you want to load the test split
@@ -173,7 +173,7 @@ dataset_args_ = LoadDatasetArgs( # Path to the dataset file
 )
 
 # Load the dataset fields
-input_texts, labels, rationale = xai_framework.load_fields_from_dataset(dataset_args_)
+results = load_fields_from_dataset(dataset_args_)
 ```
 
 #### Explain and Benchmark
