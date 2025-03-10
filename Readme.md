@@ -17,7 +17,7 @@ This framework provides tools for generating and evaluating explanations for NLP
 
 ## Introduction
 
-EvalXAI is an easy-to-use yet comprehensive toolbox that enables the quantitative evaluation, comparison, and benchmarking of post-hoc explainable AI methods, particularly feature attribution methods. It offers a comprehensive, end-to-end pipeline to assess the performance and reliability of these explanation methods.
+EvalNLP is an easy-to-use yet comprehensive toolbox that enables the quantitative evaluation, comparison, and benchmarking of post-hoc explainable AI methods, particularly feature attribution methods. It offers a comprehensive, end-to-end pipeline to assess the performance and reliability of these explanation methods.
 
 ### Explainers
 
@@ -90,12 +90,12 @@ The project is entirely made in Python 3.9 and tested on Windows 11 64 bits.
 
 ### Installation
 
-EvalXAI project can be installed from source using:
+EvalNLP project can be installed from source using:
 
 1. Clone the repo
 
 ```bash
-git clone https://github.com/kafaite24/EvalXAI.git
+git clone https://github.com/kafaite24/EvalNLP.git
 ```
 
 2. Install the requirements
