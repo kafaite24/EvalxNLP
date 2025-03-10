@@ -57,7 +57,6 @@ class AUCTPEvaluator:
        
 
         for threshold in thresholds:
-            print(threshold)
             masked_texts = []
             labels = []
             i=0
