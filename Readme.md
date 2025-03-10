@@ -1,4 +1,4 @@
-# EvalXAI Framework
+# EvalNLP Framework
 
 ## Table of Contents
 
