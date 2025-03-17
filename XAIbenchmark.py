@@ -73,7 +73,7 @@ class XAIFramework:
         cache_key = hashlib.md5(input_str.encode('utf-8')).hexdigest()
         return cache_key
     
-    def create_pivot_table(self,dataset_metrics: Dict) -> pd.DataFrame:
+    def create_pivot_table(self,dataset_metrics: Dict,save_path: Optional[str] = None) -> pd.DataFrame:
         """
         Create a pivot table from the results DataFrame.
 
@@ -95,6 +95,12 @@ class XAIFramework:
                     results.append(result)
 
             results_df = pd.DataFrame(results)
+
+            # Save the raw results to an Excel file if a save path is provided
+            if save_path:
+                results_df.to_excel(save_path, index=False)
+                print(f"Raw results saved to {save_path}")
+                
             pivot_table = results_df.pivot(index="Explainer", columns="Evaluator", values="Metric Value")
             return pivot_table
         
@@ -102,13 +108,13 @@ class XAIFramework:
             print(f"Error generating explainer table for dataset: {e}")
             return pd.DataFrame()
     
-    def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test") -> pd.DataFrame:
+    def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test",save_path: Optional[str] = None) -> pd.DataFrame:
         """
         Generate a table with results for all explainers and metrics for the entire dataset.
         """
         try:
             dataset_metrics = self.get_evaluation_metrics(input_texts, labels, rationales, extra_params)
-            pivot_table = self.create_pivot_table(dataset_metrics)
+            pivot_table = self.create_pivot_table(dataset_metrics,save_path)
             return pivot_table
         except Exception as e:
             print(f"Error generating explainer table for dataset: {e}")
@@ -221,8 +227,6 @@ class XAIFramework:
         """
         Retrieve or compute feature importance scores for a given model, explainer, and dataset instance.
         """
-        print(text)
-        print(target_label)
         try:
             all_results = {}
             explainers = self.explainers
