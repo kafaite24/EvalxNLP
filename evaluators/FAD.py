@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 from scipy.special import softmax
 import torch
-from scipy.integrate import trapz
+from numpy import trapz
 from explanation import Explanation
 from tqdm import tqdm
 

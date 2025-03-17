@@ -36,7 +36,17 @@ class HateSpeechProcessor:
         Returns:
             list of list of float: Processed rationales.
         """
-        return rationales
+        processed_rationales = []
+        for rationale in rationales:
+            if len(rationale) > 0:
+                # Compute the union of the current rationale
+                union = [any(each) for each in zip(*rationale)]
+                union = [int(each) for each in union]
+                processed_rationales.append(union)
+            else:
+                # If the rationale is empty, append it as-is
+                processed_rationales.append(rationale)
+        return processed_rationales
 
     def process_dataset(self,input_texts, labels, rationales):
         """
