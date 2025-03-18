@@ -84,7 +84,7 @@ Evaluates the conciseness of explanations (fewer features imply higher clarity).
 
 ### Prerequisites
 
-The project is entirely made in Python 3.9 and tested on Windows 11 64 bits.
+The project is entirely made in Python 3.12 and tested on Windows 11 64 bits.
 
 ### Installation
 
