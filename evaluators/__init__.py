@@ -9,5 +9,5 @@ from .complexity import ComplexityEvaluator
 from .sparseness import SparsenessEvaluator
 from .faithfulness_auc import AUCTPEvaluator
 
-__all__ = ["SensitivityEvaluator","IOUF1Evaluator","TokenF1Evaluator","AUPRCEvaluator","FADEvaluator",
-            "SoftSufficiencyEvaluator","SensitivityEvaluator","ComplexityEvaluator","SparsenessEvaluator", "AUCTPEvaluator"]
+__all__ = ["IOUF1Evaluator","TokenF1Evaluator","AUPRCEvaluator","FADEvaluator",
+            "SoftSufficiencyEvaluator","ComplexityEvaluator","SparsenessEvaluator", "AUCTPEvaluator"]
