@@ -19,11 +19,11 @@ model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
 
-ig= IntegratedGradientsExplainer(model,tokenizer)
-gb= GuidedBackpropExplainer(model,tokenizer)
-dl= DeepLiftExplainer(model,tokenizer)
-ixg= InputXGradientExplainer(model,tokenizer,multiply_by_inputs=True)
-g= InputXGradientExplainer(model,tokenizer,multiply_by_inputs=False)
+ig= IntegratedGradientsExplainer(model,tokenizer,device=device)
+gb= GuidedBackpropExplainer(model,tokenizer,device=device)
+dl= DeepLiftExplainer(model,tokenizer,device=device)
+ixg= InputXGradientExplainer(model,tokenizer,multiply_by_inputs=True,device=device)
+g= InputXGradientExplainer(model,tokenizer,multiply_by_inputs=False,device=device)
 lime= LimeExplainer(model,tokenizer)
 shap= SHAPExplainer(model,tokenizer)
 shapiq= SHAPIQExplainer(model,tokenizer)
@@ -38,7 +38,7 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[dl], evaluators=[cx], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[dl,ig,gb,ixg,g,lime,shap,shapiq], evaluators=[sc,ss,fad,sp,cx,auctp,auprc,iou_f1,token_f1], device=device)
 
 dataset_args_ = LoadDatasetArgs(
     dataset_name="eraser-benchmark/movie_rationales",
