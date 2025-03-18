@@ -50,15 +50,15 @@ class XAIFramework:
 
     def _initialize_default_evaluators(self) -> List[object]:
         return [
-            SoftComprehensivenessEvaluator(self.model, self.tokenizer),
-            SoftSufficiencyEvaluator(self.model, self.tokenizer),
-            FADEvaluator(self.model, self.tokenizer),
-            AUCTPEvaluator(self.model, self.tokenizer),
-            ComplexityEvaluator(self.model, self.tokenizer),
-            SparsenessEvaluator(self.model, self.tokenizer),
-            AUPRCEvaluator(self.model, self.tokenizer),
-            IOUF1Evaluator(self.model, self.tokenizer),
-            TokenF1Evaluator(self.model, self.tokenizer)
+            SoftComprehensivenessEvaluator(self.model, self.tokenizer,self.device),
+            SoftSufficiencyEvaluator(self.model, self.tokenizer,self.device),
+            FADEvaluator(self.model, self.tokenizer, self.device),
+            AUCTPEvaluator(self.model, self.tokenizer,self.device),
+            ComplexityEvaluator(self.model, self.tokenizer, self.device),
+            SparsenessEvaluator(self.model, self.tokenizer,self.device),
+            AUPRCEvaluator(self.model, self.tokenizer,self.device),
+            IOUF1Evaluator(self.model, self.tokenizer,self.device),
+            TokenF1Evaluator(self.model, self.tokenizer,self.device)
         ]
 
     def _generate_cache_key(self, model: str, explainer: str, input_text: str, extra_params: Optional[Dict] = None) -> str:
