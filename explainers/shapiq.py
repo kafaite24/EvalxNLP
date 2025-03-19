@@ -30,7 +30,7 @@ class SHAPIQExplainer(BaseExplainer):
             np.ndarray: A vector of sentiment scores for the target class.
         """
         outputs = self.text_classifier_engine.run_inference(input_texts, include_hidden_states=False)[1]
-        scores = outputs.softmax(dim=-1).detach().cpu().numpy()
+        scores = outputs.softmax(dim=-1).detach().numpy()
         return scores[:, target_pos_idx]  # Dynamically return scores for the target class
 
     def game_function(

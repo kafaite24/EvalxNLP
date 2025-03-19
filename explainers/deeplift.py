@@ -111,7 +111,7 @@ class DeepLiftExplainer(BaseExplainer):
         # Compute attributions
         attr = dl.attribute(inputs, baselines=baselines, target=target_pos_idx, **kwargs)
 
-        attr = attr[0, :input_len, :].detach().cpu()
+        attr = attr[0, :input_len, :].detach()
 
         # Pool over hidden size to get a single score per token
         attr = attr.sum(-1).numpy()

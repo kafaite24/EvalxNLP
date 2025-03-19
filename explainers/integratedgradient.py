@@ -57,7 +57,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
         baselines = self._generate_baselines(input_len)
         attr = dl.attribute(inputs, baselines=baselines, target=target_pos_idx, **kwargs)
 
-        attr = attr[0, :input_len, :].detach().cpu()
+        attr = attr[0, :input_len, :].detach()
 
         # pool over hidden size
         attr = attr.sum(-1).numpy()
