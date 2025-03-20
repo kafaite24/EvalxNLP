@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -125,7 +126,8 @@ class SoftSufficiencyEvaluator:
             list: The normalized sufficiency score for the instance.
         """
         original_sentences = explanation.text
-        importance_scores = torch.tensor(explanation.scores).unsqueeze(-1).to(self._device)
+
+        importance_scores = torch.tensor(explanation.scores).to(self._device)
 
         # Tokenize the sentences
         original_input = self.tokenizer(
@@ -146,6 +148,7 @@ class SoftSufficiencyEvaluator:
 
         # Compute the sufficiency score based on the perturbed input
         baseline_sufficiency = self.compute_sufficiency(original_input, perturbed_input, calculate_baseline=True)
+        print(baseline_sufficiency)
         sufficiency = self.compute_sufficiency(original_input, perturbed_input, calculate_baseline=False)
 
         # Normalize the sufficiency score
@@ -167,6 +170,7 @@ class SoftSufficiencyEvaluator:
         all_normalized_sufficiency = []
         for explanation in explanations:
             normalized_sufficiency = self.compute_single_instance(explanation)
+            print(f"normalized suff {normalized_sufficiency}")
             all_normalized_sufficiency.extend(normalized_sufficiency)
 
         # Calculate the cumulative value (average) of sufficiency scores

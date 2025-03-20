@@ -13,8 +13,8 @@ class DeepLiftExplainer(BaseExplainer):
         self,
         model,
         tokenizer,
-        device,
         multiply_by_inputs: bool = False,
+        device="cpu",
         **kwargs,
     ):
         super().__init__(model, tokenizer, **kwargs)
@@ -106,7 +106,7 @@ class DeepLiftExplainer(BaseExplainer):
         # Compute attributions
         attr = dl.attribute(inputs, baselines=baselines, target=target_pos_idx, **kwargs)
         attr = attr[0, :input_len, :].detach()
-        attr = attr.sum(-1).numpy()
+        attr = attr.sum(-1).cpu().numpy()
 
         output = Explanation(
             text=text,
