@@ -18,7 +18,7 @@ class LimeExplainer(BaseExplainer):
         target=1,
         target_token: Optional[Union[int, str]] = None,
         token_masking_strategy="mask",
-        batch_size=8,
+        batch_size=4,
         show_progress=True,
         num_samples=None,
         max_samples=5000,
@@ -61,8 +61,9 @@ class LimeExplainer(BaseExplainer):
                 show_progress=show_progress,
                 batch_size=batch_size,
             )
-
-            return logits.softmax(-1).detach().cpu().numpy()
+            logits = logits.softmax(-1).detach().cpu()
+            torch.cuda.empty_cache()  # Clear unused memory
+            return logits.numpy()
 
         def run_lime_explainer(token_ids, target_pos_idx, num_samples, lime_args):
             """
