@@ -122,9 +122,11 @@ class IntegratedGradientsExplainer(BaseExplainer):
         text = self.text_classifier_engine.validate_input(text)
 
         def func(input_embeds):
+            # Ensure input_embeds is on the correct device
+            input_embeds = input_embeds.to(self._device)
             # Ensure attention_mask is on the same device as input_embeds
             attention_mask = torch.ones(
-                *input_embeds.shape[:2], dtype=torch.uint8, device=input_embeds.to(self._device)
+                *input_embeds.shape[:2], dtype=torch.uint8, device=self._device
             )
             _, logits = self.text_classifier_engine._forward_with_input_embeds(
                 input_embeds, attention_mask, show_progress=show_progress
