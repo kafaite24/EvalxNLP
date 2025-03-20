@@ -134,7 +134,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
             return logits
 
         item = self._tokenize(text)
-        input_len = item["attention_mask"].sum().item().to(self._device)
+        input_len = item["attention_mask"].sum().item()
         dl = IntegratedGradients(
             func, **self.init_args, multiply_by_inputs=False
         )
