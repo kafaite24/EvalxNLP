@@ -310,7 +310,7 @@ class LimeExplainer(BaseExplainer):
                 batch_size=batch_size,
             )
 
-            return logits.softmax(-1).detach().numpy()
+            return logits.softmax(-1).detach().cpu().numpy()
 
         def run_lime_explainer(token_ids, target_pos_idx, num_samples, lime_args):
             """
@@ -352,7 +352,7 @@ class LimeExplainer(BaseExplainer):
         token_scores = np.array(
         [list(dict(sorted(expl.local_exp[target_pos_idx])).values())]
         )
-        token_scores[item["special_tokens_mask"].bool().numpy()] = 0.0
+        token_scores[item["special_tokens_mask"].bool().cpu().numpy()] = 0.0
         token_scores = token_scores[0]
 
         output = Explanation(
