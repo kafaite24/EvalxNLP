@@ -78,7 +78,7 @@ class SoftSufficiencyEvaluator:
         """
         # Get model prediction on original input
         original_output = self.model(**original_input)
-        original_prediction = F.softmax(original_output.logits, dim=-1).detach()..cpu().numpy()
+        original_prediction = F.softmax(original_output.logits, dim=-1).detach().cpu().numpy()
         full_text_probs = original_prediction.max(-1)
         full_text_class = original_prediction.argmax(-1)
         rows = np.arange(original_input["input_ids"].size(0))
