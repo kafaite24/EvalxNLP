@@ -38,9 +38,7 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[g], evaluators=[sc,ss,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
-
-# xai_framework = XAIFramework(model, tokenizer,explainers=[ig,gb,dl,ixg,g,lime,shap,shapiq], evaluators=[sc,ss,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[ig,gb,dl,ixg,g,lime,shap,shapiq], evaluators=[sc,ss,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
 
 dataset_args_ = LoadDatasetArgs(
     dataset_name="Hate-speech-CNERG/hatexplain",
@@ -60,8 +58,8 @@ hs= HateSpeechProcessor(tokenizer)
 processed_input_texts_hate, processed_labels_hate, processed_rationales_hate= hs.process_dataset(input_texts=texts_hate, labels=labels_hate, rationales=rationales_hate)
 
 #Select a sub-sample if you want
-input_texts_sample=processed_input_texts_hate[300:305]
-labels_sample=processed_labels_hate[300:305]
-rationale_sample= processed_rationales_hate[300:305]
+input_texts_sample=processed_input_texts_hate[300:700]
+labels_sample=processed_labels_hate[300:700]
+rationale_sample= processed_rationales_hate[300:700]
 
 xai_framework.benchmark_dataset(input_texts_sample, labels_sample, rationale_sample, save_path="../results/hate_xplain.xlsx")
