@@ -93,7 +93,7 @@ class AUCTPEvaluator:
                     ).to(self._device)
                     with torch.no_grad():
                         logits = self.model(**encoded_inputs).logits
-                        predictions = torch.argmax(logits, dim=1).numpy()
+                        predictions = torch.argmax(logits, dim=1).cpu().numpy()
 
                     batch_predictions.extend(predictions)
 
