@@ -124,7 +124,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
         def func(input_embeds):
             # Ensure attention_mask is on the same device as input_embeds
             attention_mask = torch.ones(
-                *input_embeds.shape[:2], dtype=torch.uint8, device=input_embeds.device
+                *input_embeds.shape[:2], dtype=torch.uint8, device=input_embeds.to(self._device)
             )
             _, logits = self.text_classifier_engine._forward_with_input_embeds(
                 input_embeds, attention_mask, show_progress=show_progress
@@ -132,7 +132,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
             return logits
 
         item = self._tokenize(text)
-        input_len = item["attention_mask"].sum().item()
+        input_len = item["attention_mask"].sum().item().to(self._device)
         dl = IntegratedGradients(
             func, **self.init_args, multiply_by_inputs=False
         )
