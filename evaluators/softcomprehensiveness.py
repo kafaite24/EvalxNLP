@@ -37,12 +37,12 @@ class SoftComprehensivenessEvaluator:
 
     def compute_comprehensiveness(self, original_input, perturbed_input):
         original_output = self.model(**original_input)
-        original_prediction = F.softmax(original_output.logits, dim=-1).detach().numpy()
+        original_prediction = F.softmax(original_output.logits, dim=-1).detach().cpu().numpy()
         full_text_probs = original_prediction.max(-1)
         full_text_class = original_prediction.argmax(-1)
         rows = np.arange(original_input["input_ids"].size(0))
         perturbed_output = self.model(**perturbed_input)
-        reduced_probs = F.softmax(perturbed_output.logits, dim=-1).detach().numpy()[rows, full_text_class]
+        reduced_probs = F.softmax(perturbed_output.logits, dim=-1).detach().cpu().numpy()[rows, full_text_class]
         comprehensiveness = np.maximum(0, full_text_probs - reduced_probs)
         return comprehensiveness
 

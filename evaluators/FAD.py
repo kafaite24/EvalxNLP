@@ -90,7 +90,7 @@ class FADEvaluator:
 
                 with torch.no_grad():
                     logits = self.model(**encoded_inputs).logits
-                batch_predictions = torch.argmax(logits, dim=1).numpy()
+                batch_predictions = torch.argmax(logits, dim=1).cpu().numpy()
 
                 predictions.extend(batch_predictions)
                 labels.extend(batch_labels)

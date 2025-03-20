@@ -78,7 +78,7 @@ class SoftSufficiencyEvaluator:
         """
         # Get model prediction on original input
         original_output = self.model(**original_input)
-        original_prediction = F.softmax(original_output.logits, dim=-1).detach().numpy()
+        original_prediction = F.softmax(original_output.logits, dim=-1).detach()..cpu().numpy()
         full_text_probs = original_prediction.max(-1)
         full_text_class = original_prediction.argmax(-1)
         rows = np.arange(original_input["input_ids"].size(0))
@@ -92,7 +92,7 @@ class SoftSufficiencyEvaluator:
 
         # Get model prediction on perturbed or baseline input
         yhat = self.model(**batch)
-        yhat_probs = F.softmax(yhat.logits, dim=-1).detach().numpy()
+        yhat_probs = F.softmax(yhat.logits, dim=-1).detach()..cpu().numpy()
         reduced_probs = yhat_probs[rows, full_text_class]
 
         # Compute sufficiency for perturbed input
