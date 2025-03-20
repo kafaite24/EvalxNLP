@@ -81,7 +81,7 @@ class GuidedBackpropExplainer(BaseExplainer):
         )
 
         # Pool over hidden size to get a single score per token
-        attr = attr[0, :input_len, :].detach().sum(-1).numpy()
+        attr = attr[0, :input_len, :].detach().sum(-1).cpu().numpy()
 
         # Create Explanation object
         output = Explanation(

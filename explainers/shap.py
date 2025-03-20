@@ -48,7 +48,7 @@ class SHAPExplainer(BaseExplainer):
         def func(texts: np.array):
             _, logits = self.text_classifier_engine.run_inference(texts.tolist())
             # Adjust logits based on the target token position
-            return logits.softmax(-1).detach().numpy()
+            return logits.softmax(-1).detach().cpu().numpy()
 
         masker = TextMasker(self.tokenizer)
         explainer_partition = shap.Explainer(model=func, masker=masker, **self.init_args)

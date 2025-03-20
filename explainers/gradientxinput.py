@@ -59,7 +59,7 @@ class InputXGradientExplainer(BaseExplainer):
         attr = attr[0, :input_len, :].detach()
 
         # pool over hidden size
-        attr = attr.sum(-1).numpy()
+        attr = attr.sum(-1).cpu().numpy()
        
         output = Explanation(
             text=text,
