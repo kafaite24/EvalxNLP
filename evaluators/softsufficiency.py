@@ -148,7 +148,6 @@ class SoftSufficiencyEvaluator:
 
         # Compute the sufficiency score based on the perturbed input
         baseline_sufficiency = self.compute_sufficiency(original_input, perturbed_input, calculate_baseline=True)
-        print(baseline_sufficiency)
         sufficiency = self.compute_sufficiency(original_input, perturbed_input, calculate_baseline=False)
 
         # Normalize the sufficiency score
@@ -170,7 +169,6 @@ class SoftSufficiencyEvaluator:
         all_normalized_sufficiency = []
         for explanation in explanations:
             normalized_sufficiency = self.compute_single_instance(explanation)
-            print(f"normalized suff {normalized_sufficiency}")
             all_normalized_sufficiency.extend(normalized_sufficiency)
 
         # Calculate the cumulative value (average) of sufficiency scores
