@@ -92,7 +92,7 @@ class SoftSufficiencyEvaluator:
 
         # Get model prediction on perturbed or baseline input
         yhat = self.model(**batch)
-        yhat_probs = F.softmax(yhat.logits, dim=-1).detach()..cpu().numpy()
+        yhat_probs = F.softmax(yhat.logits, dim=-1).detach().cpu().numpy()
         reduced_probs = yhat_probs[rows, full_text_class]
 
         # Compute sufficiency for perturbed input
