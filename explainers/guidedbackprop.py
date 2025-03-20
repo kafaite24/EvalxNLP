@@ -96,11 +96,11 @@
 #         )
 #         return output
 
-import torch
-import torch.nn as nn
+from .baseexplainer import BaseExplainer
 from typing import Optional, Tuple, Union
 from captum.attr import GuidedBackprop
 from explanation import Explanation
+import torch.nn as nn
 
 class GuidedBackpropExplainer(BaseExplainer):
     NAME = "guidedbackprop"
