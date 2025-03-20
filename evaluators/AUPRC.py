@@ -9,7 +9,7 @@ class AUPRCEvaluator:
     """
     NAME = "Area under PR Curve"
 
-    def __init__(self, model, tokenizer, device="cpu"):
+    def __init__(self, model, tokenizer, device):
         """
         Initialize the evaluator.
 
@@ -18,9 +18,9 @@ class AUPRCEvaluator:
             tokenizer: The tokenizer used for processing text.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
-        self.model = model.to(device)  # Move model to the specified device
+        self.model = model
         self.tokenizer = tokenizer
-        self.device = device  # Store the device
+        self._device = device
         self.requires_human_rationale = True
 
     @staticmethod
@@ -41,6 +41,7 @@ class AUPRCEvaluator:
         # Remove [CLS] and [SEP] tokens
         saliency_scores = saliency_scores[1:-1]
         human_rationale = human_rationale[:len(saliency_scores)]
+
         # Compute precision-recall and AUC
         precision, recall, _ = precision_recall_curve(human_rationale, saliency_scores)
         return auc(recall, precision)

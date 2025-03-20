@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 class AUCTPEvaluator:
     NAME = "Area under TP Curve"
 
-    def __init__(self, model, tokenizer, batch_size=32, device="cpu"):
+    def __init__(self, model, tokenizer,device, batch_size=32):
         """
         Initializes the FaithfulnessEvaluator.
 
@@ -17,10 +17,10 @@ class AUCTPEvaluator:
             batch_size (int): Batch size for processing.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
-        self.model = model.to(device)  # Move model to the specified device
+        self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
-        self.device = device  # Store the device
+        self._device = device
         self.requires_human_rationale = False
 
     @staticmethod
@@ -90,11 +90,10 @@ class AUCTPEvaluator:
                 try:
                     encoded_inputs = self.tokenizer(
                         batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True
-                    ).to(self.device)  # Move inputs to the specified device
-
+                    ).to(self._device)
                     with torch.no_grad():
                         logits = self.model(**encoded_inputs).logits
-                        predictions = torch.argmax(logits, dim=1).cpu().numpy()
+                        predictions = torch.argmax(logits, dim=1).numpy()
 
                     batch_predictions.extend(predictions)
 

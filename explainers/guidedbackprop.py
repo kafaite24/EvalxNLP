@@ -12,9 +12,10 @@ class GuidedBackpropExplainer(BaseExplainer):
         self,
         model,
         tokenizer,
-        device="cpu",
+        device,
         **kwargs,
     ):
+        self._device = device
         super().__init__(model, tokenizer, **kwargs)
 
     class ForwardWrapper(nn.Module):

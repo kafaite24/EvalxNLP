@@ -10,9 +10,10 @@ class IntegratedGradientsExplainer(BaseExplainer):
         self,
         model,
         tokenizer,
-        device= "cpu",
+        device,
         **kwargs,
     ):
+        self._device = device
         super().__init__(model, tokenizer, **kwargs)
 
     def _generate_baselines(self, input_len):
@@ -22,7 +23,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
             + [self.text_classifier_engine.tokenizer.sep_token_id]
         )
         embeddings = self.text_classifier_engine._get_embeddings_from_ids(
-            torch.tensor(ids, device=self.device)
+            torch.tensor(ids, device=self._device)
         )
         return embeddings.unsqueeze(0)
 
@@ -41,7 +42,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
 
         def func(input_embeds):
             attention_mask = torch.ones(
-                *input_embeds.shape[:2], dtype=torch.uint8, device=self.device
+                *input_embeds.shape[:2], dtype=torch.uint8, device=self._device
             )
             _, logits = self.text_classifier_engine._forward_with_input_embeds(
                 input_embeds, attention_mask, show_progress=show_progress

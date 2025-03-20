@@ -9,7 +9,7 @@ class SoftComprehensivenessEvaluator:
     Class to evaluate Soft Normalized Comprehensiveness using Explanation objects.
     """
     NAME = "Soft Comprehensiveness"
-    def __init__(self, model, tokenizer, max_len=512, device="cpu"):
+    def __init__(self, model, tokenizer,device, max_len=512):
         """
         Initialize the evaluator.
 
@@ -22,12 +22,12 @@ class SoftComprehensivenessEvaluator:
         self.model = model
         self.tokenizer = tokenizer
         self.max_len = max_len
-        self.device = device
+        self._device = device
         self.requires_human_rationale = False
 
     def soft_perturb(self, embeddings, importance_scores, attention_mask):
-        importance_scores = importance_scores.unsqueeze(-1).to(self.device)
-        attention_mask = attention_mask.unsqueeze(-1).float().to(self.device)
+        importance_scores = importance_scores.unsqueeze(-1).to(self._device)
+        attention_mask = attention_mask.unsqueeze(-1).float().to(self._device)
         normalized_importance_scores = (importance_scores - importance_scores.min()) / (importance_scores.max() - importance_scores.min())
         mask = torch.bernoulli(1 - normalized_importance_scores)
         mask = mask * attention_mask
@@ -37,12 +37,12 @@ class SoftComprehensivenessEvaluator:
 
     def compute_comprehensiveness(self, original_input, perturbed_input):
         original_output = self.model(**original_input)
-        original_prediction = F.softmax(original_output.logits, dim=-1).detach().cpu().numpy()
+        original_prediction = F.softmax(original_output.logits, dim=-1).detach().numpy()
         full_text_probs = original_prediction.max(-1)
         full_text_class = original_prediction.argmax(-1)
         rows = np.arange(original_input["input_ids"].size(0))
         perturbed_output = self.model(**perturbed_input)
-        reduced_probs = F.softmax(perturbed_output.logits, dim=-1).detach().cpu().numpy()[rows, full_text_class]
+        reduced_probs = F.softmax(perturbed_output.logits, dim=-1).detach().numpy()[rows, full_text_class]
         comprehensiveness = np.maximum(0, full_text_probs - reduced_probs)
         return comprehensiveness
 
@@ -53,13 +53,13 @@ class SoftComprehensivenessEvaluator:
             batch_explanations = explanations[i:i + batch_size]
 
             original_sentences = [exp.text[0] if isinstance(exp.text, list) else exp.text for exp in batch_explanations]
-            saliency_scores_batch = [torch.tensor(exp.scores).to(self.device) for exp in batch_explanations]
+            saliency_scores_batch = [torch.tensor(exp.scores).to(self._device) for exp in batch_explanations]
 
             original_input = self.tokenizer(
                 original_sentences, padding=True, truncation=True, 
                 max_length=self.max_len, return_tensors="pt"
             )
-            original_input = {key: val.to(self.device) for key, val in original_input.items()}
+            original_input = {key: val.to(self._device) for key, val in original_input.items()}
             
             with torch.no_grad():
                 outputs = self.model(**original_input, output_hidden_states=True)

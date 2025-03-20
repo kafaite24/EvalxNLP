@@ -12,13 +12,15 @@ class InputXGradientExplainer(BaseExplainer):
         self,
         model,
         tokenizer,
+        device,
         multiply_by_inputs: bool = True,
-        device= "cpu",
         **kwargs,
     ):
         super().__init__(model, tokenizer, **kwargs)
 
         self.multiply_by_inputs = multiply_by_inputs
+        self._device = device
+
         if self.multiply_by_inputs:
             self.NAME += "xinput"
         else:
@@ -43,7 +45,7 @@ class InputXGradientExplainer(BaseExplainer):
         text = self.text_classifier_engine.validate_input(text)
 
         item = self._tokenize(text)
-        item = {k: v.to(self.device) for k, v in item.items()}
+        item = {k: v.to(self._device) for k, v in item.items()}
         input_len = item["attention_mask"].sum().item()
         dl = (
             InputXGradient(func, **self.init_args)

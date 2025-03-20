@@ -14,7 +14,7 @@ class FADEvaluator:
     """
     NAME = "Feature Ablation Drop"
 
-    def __init__(self, model, tokenizer, batch_size=32, device="cpu"):
+    def __init__(self, model, tokenizer,device, batch_size=32):
         """
         Initialize the evaluator.
 
@@ -28,7 +28,7 @@ class FADEvaluator:
         self.tokenizer = tokenizer
         self.requires_human_rationale = False
         self.batch_size = batch_size
-        self.device = device
+        self._device = device
 
     def _replace_tokens_with_baseline(self, tokens, saliency_scores, percent_to_drop):
         """
@@ -86,11 +86,11 @@ class FADEvaluator:
                 encoded_inputs = self.tokenizer(
                     batch_texts, return_tensors="pt", truncation=True, max_length=512, padding=True
                 )
-                encoded_inputs = {key: val.to(self.device) for key, val in encoded_inputs.items()}
+                encoded_inputs = {key: val.to(self._device) for key, val in encoded_inputs.items()}
 
                 with torch.no_grad():
                     logits = self.model(**encoded_inputs).logits
-                batch_predictions = torch.argmax(logits, dim=1).cpu().numpy()
+                batch_predictions = torch.argmax(logits, dim=1).numpy()
 
                 predictions.extend(batch_predictions)
                 labels.extend(batch_labels)

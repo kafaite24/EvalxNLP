@@ -11,11 +11,11 @@ class SparsenessEvaluator:
     """
     NAME = "Sparseness"
 
-    def __init__(self, model, tokenizer, device="cpu"):
+    def __init__(self, model, tokenizer, device):
         """Initializes Sparseness with model and task."""
         self.model = model
         self.tokenizer = tokenizer
-        self.device = device
+        self._device = device
         self.requires_human_rationale = False
 
     def get_sparsity(self, attribution: torch.Tensor) -> torch.Tensor:
@@ -36,7 +36,7 @@ class SparsenessEvaluator:
         attrib_sum = abs_attrib.sum(dim=1)
 
         # Compute the weighted sum for each instance
-        weighted_sum = torch.zeros(n_instances).to(self.device)
+        weighted_sum = torch.zeros(n_instances).to(self._device)
         for j in range(n_features):
             weighted_sum += (n_features - j + 0.5) * abs_attrib[:, j]
 
@@ -58,7 +58,7 @@ class SparsenessEvaluator:
         explanations = explanations if isinstance(explanations, list) else [explanations]
 
         # Extract attributions (importance scores) from each Explanation object
-        attributions = [torch.tensor(explanation.scores).to(self.device) for explanation in explanations]
+        attributions = [torch.tensor(explanation.scores).to(self._device) for explanation in explanations]
         
         # Find the maximum length of the attributions
         max_len = max(len(attr) for attr in attributions)

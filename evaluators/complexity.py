@@ -15,7 +15,7 @@ class ComplexityEvaluator:
     """
     NAME = "Complexity"
 
-    def __init__(self, model, tokenizer, device="cpu"):
+    def __init__(self, model, tokenizer, device):
         """
         Initialize the evaluator.
 
@@ -24,9 +24,9 @@ class ComplexityEvaluator:
             tokenizer: Tokenizer used for the model.
             device: The device to use for computations ("cuda" or "cpu").
         """
-        self.model = model.to(device)  # Move model to the specified device
+        self.model = model
         self.tokenizer = tokenizer
-        self.device = device
+        self._device = device
         self.requires_human_rationale = False
 
     def _total_contribution(self, attributions: torch.Tensor) -> torch.Tensor:
@@ -72,7 +72,7 @@ class ComplexityEvaluator:
             attributions = attributions.unsqueeze(0)  # Reshape to (1, seq_len)
 
         batch_size, seq_len = attributions.shape
-        complexity = torch.zeros(batch_size, device=self.device)
+        complexity = torch.zeros(batch_size, device=self._device)
 
         for feature_index in range(seq_len):
             frac_contrib = self._fractional_contribution(attributions, feature_index)
@@ -95,7 +95,7 @@ class ComplexityEvaluator:
         results = []
         for idx, exp in enumerate(explanations):
             text = exp.text
-            attributions = torch.tensor(exp.scores, device=self.device)  # Move to device
+            attributions = torch.tensor(exp.scores, device=self._device)
 
             # Compute complexity for the current instance
             complexity_score = self.compute_complexity(attributions).item()  # Convert to Python float

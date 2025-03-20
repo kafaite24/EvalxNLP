@@ -86,7 +86,7 @@ class IOUF1Evaluator:
     Class to evaluate faithfulness of saliency explanations using IOU F1-score.
     """
 
-    def __init__(self, model, tokenizer, device="cpu"):
+    def __init__(self, model, tokenizer, device):
         """
         Initialize the evaluator.
 
@@ -95,9 +95,9 @@ class IOUF1Evaluator:
             tokenizer: Tokenizer used to process text.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
-        self.model = model.to(device)  # Move model to the specified device
+        self.model = model
         self.tokenizer = tokenizer
-        self.device = device  # Store the device
+        self._device = device
         self.requires_human_rationale = True
         self.avg_rationale_length = None
 
@@ -150,7 +150,7 @@ class TokenF1Evaluator:
     Class to evaluate faithfulness of saliency explanations using Token F1-score.
     """
 
-    def __init__(self, model, tokenizer, device="cpu"):
+    def __init__(self, model, tokenizer, device):
         """
         Initialize the evaluator.
 
@@ -159,9 +159,9 @@ class TokenF1Evaluator:
             tokenizer: Tokenizer used to process text.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
-        self.model = model.to(device)  # Move model to the specified device
+        self.model = model
         self.tokenizer = tokenizer
-        self.device = device  # Store the device
+        self._device = device
         self.requires_human_rationale = True
         self.avg_rationale_length = None
 

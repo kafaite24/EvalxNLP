@@ -14,14 +14,14 @@ from utils.saliency_utils import lp_normalize
 from utils.generate_heatmap import generate_explanation_heatmap
 
 class XAIFramework:
-    def __init__(self, model,tokenizer,explainers: Optional[List] = None, evaluators: Optional[List] = None, cache_filename="xai_cache.db", device="cpu"):
+    def __init__(self, model,tokenizer,device,explainers: Optional[List] = None, evaluators: Optional[List] = None, cache_filename="xai_cache.db"):
         self.cache_filename = cache_filename
         self.model= model
         self.tokenizer = tokenizer
         self.explainers = explainers or self._initialize_default_explainers()
         self.evaluators = evaluators or self._initialize_default_evaluators()
         self.text_classifier_engine = TextClassifierEngine(self.model, self.tokenizer)
-        self.device = device
+        self._device = device
 
     def _initialize_model_and_tokenizer(self) -> Tuple[Optional[AutoModelForSequenceClassification], Optional[AutoTokenizer]]:
         """
@@ -50,15 +50,15 @@ class XAIFramework:
 
     def _initialize_default_evaluators(self) -> List[object]:
         return [
-            SoftComprehensivenessEvaluator(self.model, self.tokenizer,self.device),
-            SoftSufficiencyEvaluator(self.model, self.tokenizer,self.device),
-            FADEvaluator(self.model, self.tokenizer, self.device),
-            AUCTPEvaluator(self.model, self.tokenizer,self.device),
-            ComplexityEvaluator(self.model, self.tokenizer, self.device),
-            SparsenessEvaluator(self.model, self.tokenizer,self.device),
-            AUPRCEvaluator(self.model, self.tokenizer,self.device),
-            IOUF1Evaluator(self.model, self.tokenizer,self.device),
-            TokenF1Evaluator(self.model, self.tokenizer,self.device)
+            SoftComprehensivenessEvaluator(self.model, self.tokenizer,self._device),
+            SoftSufficiencyEvaluator(self.model, self.tokenizer,self._device),
+            FADEvaluator(self.model, self.tokenizer, self._device),
+            AUCTPEvaluator(self.model, self.tokenizer,self._device),
+            ComplexityEvaluator(self.model, self.tokenizer, self._device),
+            SparsenessEvaluator(self.model, self.tokenizer,self._device),
+            AUPRCEvaluator(self.model, self.tokenizer,self._device),
+            IOUF1Evaluator(self.model, self.tokenizer,self._device),
+            TokenF1Evaluator(self.model, self.tokenizer,self._device)
         ]
 
     def _generate_cache_key(self, model: str, explainer: str, input_text: str, extra_params: Optional[Dict] = None) -> str:

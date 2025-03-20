@@ -6,7 +6,7 @@ import numpy as np
 class SoftSufficiencyEvaluator:
     NAME = "Soft Sufficiency"
 
-    def __init__(self, model, tokenizer, max_len=512, device="cpu"):
+    def __init__(self, model, tokenizer, device, max_len=512):
         """
         Initializes the Soft Normalized Sufficiency computation.
         
@@ -19,7 +19,7 @@ class SoftSufficiencyEvaluator:
         self.model = model
         self.tokenizer = tokenizer
         self.max_len = max_len
-        self.device = device
+        self._device = device
         self.requires_human_rationale = False
 
     def soft_perturb(self, embeddings, importance_scores, attention_mask):
@@ -35,8 +35,8 @@ class SoftSufficiencyEvaluator:
             torch.Tensor: Perturbed token embeddings.
         """
         # Move tensors to the correct device
-        importance_scores = importance_scores.unsqueeze(-1).to(self.device)
-        attention_mask = attention_mask.unsqueeze(-1).float().to(self.device)
+        importance_scores = importance_scores.unsqueeze(-1).to(self._device)
+        attention_mask = attention_mask.unsqueeze(-1).float().to(self._device)
 
         # Normalize importance scores
         normalized_importance_scores = (importance_scores - importance_scores.min()) / (importance_scores.max() - importance_scores.min())
@@ -77,21 +77,21 @@ class SoftSufficiencyEvaluator:
         """
         # Get model prediction on original input
         original_output = self.model(**original_input)
-        original_prediction = F.softmax(original_output.logits, dim=-1).detach().cpu().numpy()
+        original_prediction = F.softmax(original_output.logits, dim=-1).detach().numpy()
         full_text_probs = original_prediction.max(-1)
         full_text_class = original_prediction.argmax(-1)
         rows = np.arange(original_input["input_ids"].size(0))
 
         if calculate_baseline:
             baseline_input = original_input.copy()
-            baseline_input['input_ids'] = torch.zeros_like(original_input['input_ids']).long().to(self.device)
+            baseline_input['input_ids'] = torch.zeros_like(original_input['input_ids']).long().to(self._device)
             batch = baseline_input
         else:
             batch = perturbed_input
 
         # Get model prediction on perturbed or baseline input
         yhat = self.model(**batch)
-        yhat_probs = F.softmax(yhat.logits, dim=-1).detach().cpu().numpy()
+        yhat_probs = F.softmax(yhat.logits, dim=-1).detach().numpy()
         reduced_probs = yhat_probs[rows, full_text_class]
 
         # Compute sufficiency for perturbed input
@@ -125,14 +125,14 @@ class SoftSufficiencyEvaluator:
             list: The normalized sufficiency score for the instance.
         """
         original_sentences = explanation.text
-        importance_scores = torch.tensor(explanation.scores).unsqueeze(-1).to(self.device)
+        importance_scores = torch.tensor(explanation.scores).unsqueeze(-1).to(self._device)
 
         # Tokenize the sentences
         original_input = self.tokenizer(
             original_sentences, padding=True, truncation=True, 
             max_length=self.max_len, return_tensors="pt"
         )
-        original_input = {key: val.to(self.device) for key, val in original_input.items()}
+        original_input = {key: val.to(self._device) for key, val in original_input.items()}
 
         # Get embeddings (using the model's outputs)
         with torch.no_grad():

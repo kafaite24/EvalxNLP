@@ -13,7 +13,7 @@ from dataset_loaders.dataset_loader import LoadDatasetArgs,load_fields_from_data
 from dataset_loaders.movie_rationales import MovieRationalesProcessor
 from dataset_loaders.hatexplain import HateSpeechProcessor
 
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 model_name = "Hate-speech-CNERG/bert-base-uncased-hatexplain"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -38,7 +38,7 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[dl,ig,gb,ixg,g,lime,shap,shapiq], evaluators=[sc,ss,fad,sp,cx,auctp,auprc,iou_f1,token_f1], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[dl], evaluators=[auprc], device=device)
 
 dataset_args_ = LoadDatasetArgs(
     dataset_name="Hate-speech-CNERG/hatexplain",
@@ -54,7 +54,7 @@ texts_hate= results_hate['text']
 labels_hate= results_hate['labels']
 rationales_hate= results_hate['rationales']
 
-hs= HateSpeechProcessor()
+hs= HateSpeechProcessor(tokenizer)
 processed_input_texts_hate, processed_labels_hate, processed_rationales_hate= hs.process_dataset(input_texts=texts_hate, labels=labels_hate, rationales=rationales_hate)
 
 #Select a sub-sample if you want
