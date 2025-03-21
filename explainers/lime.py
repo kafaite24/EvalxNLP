@@ -266,9 +266,9 @@ class LimeExplainer(BaseExplainer):
         target=1,
         target_token: Optional[Union[int, str]] = None,
         token_masking_strategy="mask",
-        batch_size=4,
+        batch_size=8,
         show_progress=True,
-        num_samples=250,
+        num_samples=none,
         max_samples=5000,
         **kwargs
     ):
