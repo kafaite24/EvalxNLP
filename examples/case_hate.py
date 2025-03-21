@@ -58,8 +58,8 @@ hs= HateSpeechProcessor(tokenizer)
 processed_input_texts_hate, processed_labels_hate, processed_rationales_hate= hs.process_dataset(input_texts=texts_hate, labels=labels_hate, rationales=rationales_hate)
 
 #Select a sub-sample if you want
-input_texts_sample=processed_input_texts_hate[300:700]
-labels_sample=processed_labels_hate[300:700]
-rationale_sample= processed_rationales_hate[300:700]
+input_texts_sample=processed_input_texts_hate
+labels_sample=processed_labels_hate
+rationale_sample= processed_rationales_hate
 
 xai_framework.benchmark_dataset(input_texts_sample, labels_sample, rationale_sample, save_path="../results/hate_xplain.xlsx")
