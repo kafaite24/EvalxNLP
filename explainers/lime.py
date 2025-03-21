@@ -268,7 +268,7 @@ class LimeExplainer(BaseExplainer):
         token_masking_strategy="mask",
         batch_size=4,
         show_progress=True,
-        num_samples=300,
+        num_samples=250,
         max_samples=5000,
         **kwargs
     ):
