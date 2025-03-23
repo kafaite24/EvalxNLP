@@ -38,7 +38,7 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[ig,gb,dl,ixg,g,lime,shap,shapiq], evaluators=[iou_f1,token_f1], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[gb,dl,ixg,g,ig,lime,shap,shapiq], evaluators=[sc,ss,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
 
 dataset_args_ = LoadDatasetArgs(
     dataset_name="eraser-benchmark/movie_rationales",
@@ -58,8 +58,8 @@ mv= MovieRationalesProcessor(tokenizer)
 processed_rationales= mv.process_dataset(input_texts, labels, rationales)
 
 #Select a sub-sample if you want
-input_texts_sample=input_texts
-labels_sample=labels
-rationale_sample= processed_rationales
+input_texts_sample=input_texts[:10]
+labels_sample=labels[:10]
+rationale_sample= processed_rationales[:10]
 
 xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rationale_sample, save_path="../results/movie_rationales.xlsx")
