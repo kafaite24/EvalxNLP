@@ -14,7 +14,7 @@ def calculate_avg_rationale_length(explanations):
         int: Average length of rationales.
     """
     rationale_lengths = [
-        len([r for r in exp.scores if r == 1]) for exp in explanations
+        len([r for r in exp.rationale if r == 1]) for exp in explanations
     ]
     return int(np.mean(rationale_lengths)) if rationale_lengths else 0
 
@@ -123,10 +123,11 @@ class IOUF1Evaluator:
                 continue
             iou = evaluate_instance(exp, exp.rationale, self.avg_rationale_length, calculate_iou)
             metrics_list.append(iou)
-            if iou >= 0.5:  # Check if IOU >= 0.5
-                matches += 1
+            # if iou >= 0.5:  # Check if IOU >= 0.5
+            #     matches += 1
 
-        IOU_F1 = matches / len(metrics_list) if metrics_list else 0.0  # IOU F1-score
+        # IOU_F1 = matches / len(metrics_list) if metrics_list else 0.0  # IOU F1-score
+        IOU_F1=np.mean(metrics_list) if metrics_list else 0.0
         return IOU_F1
 
     def compute(self, explanations):

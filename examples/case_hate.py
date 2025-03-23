@@ -38,7 +38,7 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[ig,gb,dl,ixg,g,lime,shap,shapiq], evaluators=[sc,ss,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[ig,gb,dl,ixg,g,lime,shap,shapiq], evaluators=[iou_f1,token_f1], device=device)
 
 dataset_args_ = LoadDatasetArgs(
     dataset_name="Hate-speech-CNERG/hatexplain",
