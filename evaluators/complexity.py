@@ -1,8 +1,9 @@
 import torch
 import numpy as np
 import pandas as pd
+from .baseevaluator import BaseEvaluator
 
-class ComplexityEvaluator:
+class ComplexityEvaluator(BaseEvaluator):
     """
     Class to evaluate the complexity of token-level attributions for text data.
 
@@ -15,7 +16,7 @@ class ComplexityEvaluator:
     """
     NAME = "Complexity"
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 

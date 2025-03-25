@@ -1,7 +1,8 @@
 from typing import Callable
 import torch
+from .baseevaluator import BaseEvaluator
 
-class SparsenessEvaluator:
+class SparsenessEvaluator(BaseEvaluator):
     """Implementation of the sparseness metric.
 
     Computes the sparseness of the model based on the Gini index.
@@ -11,7 +12,7 @@ class SparsenessEvaluator:
     """
     NAME = "Sparseness"
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """Initializes Sparseness with model and task."""
         self.model = model
         self.tokenizer = tokenizer

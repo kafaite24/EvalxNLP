@@ -335,7 +335,6 @@ class XAIFramework:
             results = []
 
             for explainer in explainers:
-                print(f"explainer {explainer.NAME}")
                 explanation = explainer.compute_feature_importance(input_data, target_label)
                 explanation = lp_normalize([explanation])
                 explanation.rationale = human_rationale

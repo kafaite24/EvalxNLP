@@ -6,15 +6,16 @@ import torch
 from numpy import trapz
 from explanation import Explanation
 from tqdm import tqdm
+from .baseevaluator import BaseEvaluator
 
-class FADEvaluator:
+class FADEvaluator(BaseEvaluator):
     """
     Class to evaluate the impact of feature (token) dropping on text data
     based on saliency scores (e.g., Gradient x Input).
     """
     NAME = "Feature Ablation Drop"
 
-    def __init__(self, model, tokenizer,device, batch_size=32):
+    def __init__(self, model, tokenizer,device="cpu", batch_size=32):
         """
         Initialize the evaluator.
 

@@ -1,15 +1,15 @@
 import numpy as np
 from sklearn.metrics import auc, precision_recall_curve
 from explanation import Explanation
+from .baseevaluator import BaseEvaluator
 
-
-class AUPRCEvaluator:
+class AUPRCEvaluator(BaseEvaluator):
     """
     Class to evaluate saliency explanations using AUPRC (Area Under the Precision-Recall Curve).
     """
     NAME = "Area under PR Curve"
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 

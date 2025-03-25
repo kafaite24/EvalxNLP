@@ -12,7 +12,7 @@ class InputXGradientExplainer(BaseExplainer):
         self,
         model,
         tokenizer,
-        device,
+        device="cpu",
         multiply_by_inputs: bool = True,
         **kwargs,
     ):

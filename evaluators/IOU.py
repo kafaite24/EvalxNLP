@@ -1,6 +1,7 @@
 
 import numpy as np
 from utils.saliency_utils import top_k_selection
+from .baseevaluator import BaseEvaluator
 
 
 def calculate_avg_rationale_length(explanations):
@@ -80,13 +81,13 @@ def calculate_f1(predicted, ground_truth):
     return f1
 
 
-class IOUF1Evaluator:
+class IOUF1Evaluator(BaseEvaluator):
     NAME = "IOU F1 score"
     """
     Class to evaluate faithfulness of saliency explanations using IOU F1-score.
     """
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 
@@ -145,13 +146,13 @@ class IOUF1Evaluator:
         return self.evaluate(explanations)
 
 
-class TokenF1Evaluator:
+class TokenF1Evaluator(BaseEvaluator):
     NAME = "Token F1 score"
     """
     Class to evaluate faithfulness of saliency explanations using Token F1-score.
     """
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 
