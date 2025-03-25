@@ -62,7 +62,7 @@ class SHAPIQExplainer(BaseExplainer):
         self,
         text: str,
         target: Union[int, str] = 1,
-        budget: int = 256,
+        budget: int = 128,
         **kwargs,
     ) -> Explanation:
         """
