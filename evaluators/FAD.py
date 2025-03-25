@@ -6,8 +6,9 @@ import torch
 from numpy import trapz
 from explanation import Explanation
 from tqdm import tqdm
+from .baseevaluator import BaseEvaluator
 
-class FADEvaluator:
+class FADEvaluator(BaseEvaluator):
     """
     Class to evaluate the impact of feature (token) dropping on text data
     based on saliency scores (e.g., Gradient x Input).

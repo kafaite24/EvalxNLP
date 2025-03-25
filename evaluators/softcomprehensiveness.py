@@ -3,8 +3,9 @@ import torch
 import torch.nn.functional as F
 from utils.saliency_utils import top_k_selection
 from tqdm import tqdm
+from .baseevaluator import BaseEvaluator
 
-class SoftComprehensivenessEvaluator:
+class SoftComprehensivenessEvaluator(BaseEvaluator):
     """
     Class to evaluate Soft Normalized Comprehensiveness using Explanation objects.
     """

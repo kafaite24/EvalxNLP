@@ -3,8 +3,9 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 import numpy as np
+from .baseevaluator import BaseEvaluator
 
-class SoftSufficiencyEvaluator:
+class SoftSufficiencyEvaluator(BaseEvaluator):
     NAME = "Soft Sufficiency"
 
     def __init__(self, model, tokenizer, device, max_len=512):

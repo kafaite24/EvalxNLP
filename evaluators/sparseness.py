@@ -1,7 +1,8 @@
 from typing import Callable
 import torch
+from .baseevaluator import BaseEvaluator
 
-class SparsenessEvaluator:
+class SparsenessEvaluator(BaseEvaluator):
     """Implementation of the sparseness metric.
 
     Computes the sparseness of the model based on the Gini index.

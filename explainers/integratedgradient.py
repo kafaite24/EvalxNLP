@@ -11,7 +11,7 @@ class IntegratedGradientsExplainer(BaseExplainer):
         self,
         model,
         tokenizer,
-        device,
+        device="cpu",
         **kwargs,
     ):
         self._device = device

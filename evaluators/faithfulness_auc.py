@@ -2,9 +2,10 @@ import numpy as np
 import torch
 from sklearn.metrics import auc, accuracy_score
 import matplotlib.pyplot as plt
+from .baseevaluator import BaseEvaluator
 
 
-class AUCTPEvaluator:
+class AUCTPEvaluator((BaseEvaluator)):
     NAME = "Area under TP Curve"
 
     def __init__(self, model, tokenizer,device, batch_size=32):
