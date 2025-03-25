@@ -87,7 +87,7 @@ class IOUF1Evaluator(BaseEvaluator):
     Class to evaluate faithfulness of saliency explanations using IOU F1-score.
     """
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 
@@ -152,7 +152,7 @@ class TokenF1Evaluator(BaseEvaluator):
     Class to evaluate faithfulness of saliency explanations using Token F1-score.
     """
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 

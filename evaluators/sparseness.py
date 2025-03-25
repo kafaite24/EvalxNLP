@@ -12,7 +12,7 @@ class SparsenessEvaluator(BaseEvaluator):
     """
     NAME = "Sparseness"
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """Initializes Sparseness with model and task."""
         self.model = model
         self.tokenizer = tokenizer

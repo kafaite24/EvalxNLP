@@ -8,7 +8,7 @@ from .baseevaluator import BaseEvaluator
 class SoftSufficiencyEvaluator(BaseEvaluator):
     NAME = "Soft Sufficiency"
 
-    def __init__(self, model, tokenizer, device, max_len=512):
+    def __init__(self, model, tokenizer, device="cpu", max_len=512):
         """
         Initializes the Soft Normalized Sufficiency computation.
         

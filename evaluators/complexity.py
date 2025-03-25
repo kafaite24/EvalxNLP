@@ -16,7 +16,7 @@ class ComplexityEvaluator(BaseEvaluator):
     """
     NAME = "Complexity"
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 

@@ -15,7 +15,7 @@ class FADEvaluator(BaseEvaluator):
     """
     NAME = "Feature Ablation Drop"
 
-    def __init__(self, model, tokenizer,device, batch_size=32):
+    def __init__(self, model, tokenizer,device="cpu", batch_size=32):
         """
         Initialize the evaluator.
 

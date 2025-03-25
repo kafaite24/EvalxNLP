@@ -9,7 +9,7 @@ class AUPRCEvaluator(BaseEvaluator):
     """
     NAME = "Area under PR Curve"
 
-    def __init__(self, model, tokenizer, device):
+    def __init__(self, model, tokenizer, device="cpu"):
         """
         Initialize the evaluator.
 
