@@ -11,7 +11,7 @@ class LLMExplanationGenerator:
         self.model_name = model_name
         self.api_key = api_key
         self.client = Together(api_key=self.api_key)
-        self.output_dir = Path("../results/explanations")
+        self.output_dir = Path("../results/llm_explanations")
         self.output_dir.mkdir(exist_ok=True)
 
     def generate_and_save_explanations(self, exps, output_format="both"):
@@ -102,15 +102,15 @@ class LLMExplanationGenerator:
             clean_explanation = exp['explanation'].replace('Interpretation of Saliency Scores', '')
             display(HTML(f"""
             <div style='
-                background: #f5f5f5;
+                # background: #f5f5f5;
                 padding: 12px;
                 margin: 12px 0;
                 border-radius: 4px;
                 border-left: 4px solid #4e79a7;
-                color:black;
+                color:white;
             '>
-                <h4 style='margin-top:0;color:#2c3e50;'>
-                    {exp['method'].upper()} • <span style='color:#7f8c8d'>Target: {exp['target']}</span>
+                <h4 style='margin-top:0;color:white;'>
+                    {exp['method'].upper()} • <span style='color:white'>Target: {exp['target']}</span>
                 </h4>
                 <pre style='white-space:pre-wrap;margin-bottom:0;'>{clean_explanation}</pre>
             </div>
@@ -133,7 +133,6 @@ class LLMExplanationGenerator:
             )
             
             explanation = response.choices[0].message.content.strip()
-            print(exp.text)
             explanations.append({
                 "method": exp.explainer,
                 "explanation": explanation,
@@ -162,3 +161,5 @@ class LLMExplanationGenerator:
         Provide concise explanation specifically for {exp.explainer} method:
         """
         return prompt
+
+    
