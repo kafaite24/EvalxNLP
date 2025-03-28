@@ -1,64 +1,164 @@
+import json
+from pathlib import Path
+from IPython.display import display, HTML
 from together import Together
 
 class LLMExplanationGenerator:
     def __init__(self, api_key, model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
         """
-        Initialize the LLMExplanationGenerator with an API key and model name.
-
-        Args:
-            api_key (str): The API key for the Together.ai service.
-            model_name (str): The name of the LLM model to use. Defaults to "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free".
+        Initialize with API key and model name, plus output directory setup.
         """
         self.model_name = model_name
         self.api_key = api_key
-        self.client = Together(api_key=self.api_key)  # Initialize the Together client
+        self.client = Together(api_key=self.api_key)
+        self.output_dir = Path("explanations")
+        self.output_dir.mkdir(exist_ok=True)
+
+    def generate_and_save_explanations(self, exps, output_format="both"):
+        """
+        Generate explanations and save to file(s) with display options.
+        
+        Args:
+            exps: List of explanation objects
+            output_format: "json", "html", or "both" (default)
+            
+        Returns:
+            Tuple: (list of explanations, path to saved files)
+        """
+        explanations = self.generate_explanation(exps)
+        
+        saved_files = []
+        
+        # JSON output (always created for programmatic use)
+        json_path = self.output_dir / "explanations.json"
+        self._save_to_json(explanations, json_path)
+        saved_files.append(json_path)
+        
+        if output_format in ("html", "both"):
+            html_path = self.output_dir / "explanations.html"
+            self._save_to_html(explanations, html_path)
+            saved_files.append(html_path)
+            
+        return explanations, saved_files
+
+    def _save_to_json(self, explanations, filepath):
+        """Save explanations to JSON with metadata."""
+        output_data = {
+            "metadata": {
+                "model": self.model_name,
+                "num_explanations": len(explanations)
+            },
+            "explanations": explanations
+        }
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
+
+    def _save_to_html(self, explanations, filepath):
+        """Generate human-readable HTML report."""
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Model Explanations Report</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }}
+                .explanation {{ 
+                    background: #f8f9fa;
+                    border-left: 4px solid #4e79a7;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    border-radius: 4px;
+                }}
+                h3 {{ color: #2c3e50; margin-top: 0; }}
+                .meta {{ color: #7f8c8d; font-size: 0.9em; }}
+                pre {{ white-space: pre-wrap; }}
+            </style>
+        </head>
+        <body>
+            <h1>Model Explanations Report</h1>
+            <div class="meta">
+                Model: {self.model_name}<br>
+            </div>
+            <hr>
+            {"".join(
+                f"""
+                <div class="explanation">
+                    <h3>{exp['method'].upper()} (Target: {exp['target']})</h3>
+                    <pre>{exp['explanation'].replace('Interpretation of Saliency Scores', '')}</pre>
+                </div>
+                """ for exp in explanations
+            )}
+        </body>
+        </html>
+        """
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+    def display_explanations(self, explanations):
+        """Display explanations in notebook with formatting."""
+        for exp in explanations:
+            clean_explanation = exp['explanation'].replace('Interpretation of Saliency Scores', '')
+            display(HTML(f"""
+            <div style='
+                background: #f5f5f5;
+                padding: 12px;
+                margin: 12px 0;
+                border-radius: 4px;
+                border-left: 4px solid #4e79a7;
+                color:black;
+            '>
+                <h4 style='margin-top:0;color:#2c3e50;'>
+                    {exp['method'].upper()} • <span style='color:#7f8c8d'>Target: {exp['target']}</span>
+                </h4>
+                <pre style='white-space:pre-wrap;margin-bottom:0;'>{clean_explanation}</pre>
+            </div>
+            """))
 
     def generate_explanation(self, exps):
         """
-        Generate textual explanations for a list of explanations (exps).
-
-        Args:
-            exps (list): A list of explanation objects containing text, tokens, scores, explainer, and target.
-
-        Returns:
-            list: A list of generated explanations.
+        Generate textual explanations for a list of explanations (exps), with explicit method attribution.
         """
         exps = exps if isinstance(exps, list) else [exps]
         explanations = []
 
         for exp in exps:
-            # Prepare the prompt for the LLM
             prompt = self._create_prompt(exp)
-            # Call the Together.ai API
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=500,  # Adjust as needed
-                temperature=0.7,  # Adjust for creativity vs. determinism
+                max_tokens=500,
+                temperature=0.7,
             )
             
-            # Extract the generated explanation
             explanation = response.choices[0].message.content.strip()
-            explanations.append(explanation)
+            print(exp.text)
+            explanations.append({
+                "method": exp.explainer,
+                "explanation": explanation,
+                "target": exp.target
+            })
         
         return explanations
 
     def _create_prompt(self, exp):
         """
-        Create a structured prompt for the LLM based on the explanation object.
-
-        Args:
-            exp: An explanation object containing text, tokens, scores, explainer, and target.
-
-        Returns:
-            str: A formatted prompt for the LLM.
+        Create a prompt that explicitly requests method-specific explanations.
         """
+        
         prompt = f"""
-        Below is a sentence, its tokens, and the corresponding importance scores generated by the {exp.explainer} method. Please provide a brief, simple explanation of how to interpret these scores and what they indicate about the model's decision for the target label '{exp.target}'.
+        You are analyzing {exp.explainer} explanations for a text classification model.
+        The target class is '{exp.target}'.
+        
+        Given these token importance scores from {exp.explainer}, explain:
+        1. How are these scores calculated?
+        2. How to interpret them to with respect to model's dccision?
 
         Sentence: {exp.text}
         Tokens: {exp.tokens}
         Scores: {exp.scores}
 
+        Provide concise explanation specifically for {exp.explainer} method:
         """
         return prompt

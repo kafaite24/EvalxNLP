@@ -20,8 +20,8 @@ class DeepLiftExplainer(BaseExplainer):
         super().__init__(model, tokenizer, **kwargs)
         self.multiply_by_inputs = multiply_by_inputs
         self._device = device  # Store the device in _device to avoid property conflict
-        if self.multiply_by_inputs:
-            self.NAME += " (x Input)"
+        # if self.multiply_by_inputs:
+        #     self.NAME += " (x Input)"
 
     class ForwardWrapper(nn.Module):
         """
