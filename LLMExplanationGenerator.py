@@ -11,7 +11,7 @@ class LLMExplanationGenerator:
         self.model_name = model_name
         self.api_key = api_key
         self.client = Together(api_key=self.api_key)
-        self.output_dir = Path("explanations")
+        self.output_dir = Path("../results/explanations")
         self.output_dir.mkdir(exist_ok=True)
 
     def generate_and_save_explanations(self, exps, output_format="both"):
