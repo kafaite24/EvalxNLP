@@ -73,19 +73,33 @@ class EvaluationMetricsExplainer:
         Returns:
             dict: Structured explanations
         """
+
         explanations = {}
+    
+        # Convert input to standardized long format
+        if isinstance(results_data, pd.DataFrame):
+            # DataFrame format - explainers as index, metrics as columns
+            df_long = results_data.reset_index().melt(
+                id_vars='Explainer',
+                var_name='Metric',
+                value_name='Value'
+            )
+        elif isinstance(results_data, dict):
+            # Dict format - explainers as keys, metrics as rows
+            df = pd.DataFrame.from_dict(results_data)
+            df_long = df.reset_index().melt(
+                id_vars='index',
+                var_name='Explainer',
+                value_name='Value'
+            )
+            df_long = df_long.rename(columns={'index': 'Metric'})
+        else:
+            raise ValueError("Input must be DataFrame or dictionary")
         
-        # Convert to long format
-        df = results_data.reset_index().melt(
-            id_vars='Explainer',
-            var_name='Evaluator',
-            value_name='Value'
-        )
+        # Process valid results
+        valid_results = df_long.dropna(subset=['Value'])
         
-        # Filter valid results
-        valid_results = df.dropna(subset=['Value'])
-        
-        for metric, group in valid_results.groupby('Evaluator'):
+        for metric, group in valid_results.groupby('Metric'):
             if metric not in self.metric_info:
                 continue
                 
@@ -101,7 +115,7 @@ class EvaluationMetricsExplainer:
                 )
                 
                 metric_explanations[row['Explainer']] = {
-                    'value': row['Value'],
+                    'value': float(row['Value']),
                     'interpretation': self._query_llm(prompt)
                 }
             
@@ -112,6 +126,7 @@ class EvaluationMetricsExplainer:
                     'range': info['range'],
                     'explanations': metric_explanations
                 }
+            
                 
         return explanations
 
