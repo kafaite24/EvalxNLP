@@ -12,6 +12,7 @@ from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, SoftSuffi
 from dataset_loaders.dataset_loader import LoadDatasetArgs,load_fields_from_dataset
 from dataset_loaders.movie_rationales import MovieRationalesProcessor
 from dataset_loaders.hatexplain import HateSpeechProcessor
+from LLMExplanationGenerator import LLMExplanationGenerator
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -58,8 +59,23 @@ mv= MovieRationalesProcessor(tokenizer)
 processed_rationales= mv.process_dataset(input_texts, labels, rationales)
 
 #Select a sub-sample if you want
-input_texts_sample=input_texts[:10]
-labels_sample=labels[:10]
-rationale_sample= processed_rationales[:10]
+input_texts_sample=input_texts[:5]
+labels_sample=labels[:5]
+rationale_sample= processed_rationales[:5]
+
+api_key = "9b305c0291728a7f4ca861254b9bedd3e7785d5360100d93603dd1758931be6d"
+explainer = LLMExplanationGenerator(api_key=api_key)
+
+# Generate and save explanations (returns both explanations and file paths)
+explanations, saved_files = explainer.generate_and_save_explanations(
+    exps=exps,
+    output_format="both"  # or "json"/"html"
+)
+
+# Display in notebook
+explainer.display_explanations(explanations)
+
+# Print saved locations
+print(f"Saved files: {[str(p) for p in saved_files]}")
 
 xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rationale_sample, save_path="../results/movie_rationales.xlsx")
