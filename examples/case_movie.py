@@ -72,9 +72,6 @@ explanations, saved_files = explainer.generate_and_save_explanations(
     output_format="both"  # or "json"/"html"
 )
 
-# Display in notebook
-explainer.display_explanations(explanations)
-
 # Print saved locations
 print(f"Saved files: {[str(p) for p in saved_files]}")
 
