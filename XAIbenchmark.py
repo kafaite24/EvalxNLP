@@ -16,12 +16,12 @@ from utils.generate_heatmap import generate_explanation_heatmap
 class XAIFramework:
     def __init__(self, model,tokenizer,device,explainers: Optional[List] = None, evaluators: Optional[List] = None, cache_filename="xai_cache.db"):
         self.cache_filename = cache_filename
+        self._device = device
         self.model= model
         self.tokenizer = tokenizer
         self.explainers = explainers or self._initialize_default_explainers()
         self.evaluators = evaluators or self._initialize_default_evaluators()
         self.text_classifier_engine = TextClassifierEngine(self.model, self.tokenizer)
-        self._device = device
 
     def _initialize_model_and_tokenizer(self) -> Tuple[Optional[AutoModelForSequenceClassification], Optional[AutoTokenizer]]:
         """
@@ -40,12 +40,12 @@ class XAIFramework:
         return [
             SHAPExplainer(self.model, self.tokenizer),
             LimeExplainer(self.model, self.tokenizer),
-            InputXGradientExplainer(self.model, self.tokenizer, multiply_by_inputs=False),
-            InputXGradientExplainer(self.model, self.tokenizer, multiply_by_inputs=True),
-            IntegratedGradientsExplainer(self.model, self.tokenizer, multiply_by_inputs=False),
-            DeepLiftExplainer(self.model, self.tokenizer),
+            InputXGradientExplainer(self.model, self.tokenizer,device=self._device,multiply_by_inputs=False),
+            InputXGradientExplainer(self.model, self.tokenizer, device=self._device, multiply_by_inputs=True),
+            IntegratedGradientsExplainer(self.model, self.tokenizer, device=self._device, multiply_by_inputs=False),
+            DeepLiftExplainer(self.model, self.tokenizer,device=self._device),
             SHAPIQExplainer(self.model, self.tokenizer),
-            GuidedBackpropExplainer(self.model, self.tokenizer)
+            GuidedBackpropExplainer(self.model, self.tokenizer,device=self._device)
         ]
 
     def _initialize_default_evaluators(self) -> List[object]:
