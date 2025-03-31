@@ -19,6 +19,5 @@ results = load_fields_from_dataset(dataset_args)
 processed_rationales = MovieRationalesProcessor(tokenizer).process_dataset(results['text'], results['labels'], results['rationales'])
 
 sample = slice(2)
-exp_scores = xai_framework.get_feature_importance_for_dataset(results['text'][sample], results['labels'][sample], processed_rationales[sample])
 
-xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rationale_sample, save_path="../results/movie_rationales.xlsx")
+xai_framework.benchmark_dataset(results['text'][sample], results['labels'][sample],rationales=processed_rationales[sample], save_path="../results/movie_rationales.xlsx")
