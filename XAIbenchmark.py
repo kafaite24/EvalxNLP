@@ -42,7 +42,7 @@ class XAIFramework:
             LimeExplainer(self.model, self.tokenizer),
             InputXGradientExplainer(self.model, self.tokenizer,device=self._device,multiply_by_inputs=False),
             InputXGradientExplainer(self.model, self.tokenizer, device=self._device, multiply_by_inputs=True),
-            IntegratedGradientsExplainer(self.model, self.tokenizer, device=self._device, multiply_by_inputs=False),
+            IntegratedGradientsExplainer(self.model, self.tokenizer, device=self._device),
             DeepLiftExplainer(self.model, self.tokenizer,device=self._device),
             SHAPIQExplainer(self.model, self.tokenizer),
             GuidedBackpropExplainer(self.model, self.tokenizer,device=self._device)
