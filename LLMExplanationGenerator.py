@@ -61,7 +61,9 @@ class LLMExplanationGenerator:
         for exp in explanations:
             div = f"""
             <div class="explanation">
-                <h3>{exp['method'].upper()} (Target: {exp['target']})</h3>
+                <h3>{exp['method'].upper()}</h3>
+                <span style='color:black'> Sentence: {exp['text']} </span><br>
+                <span style='color:black'> Model Label: {exp['target']} </span>
                 <pre>{exp['explanation'].replace('Interpretation of Saliency Scores', '')}</pre>
             </div>
             """
@@ -155,8 +157,10 @@ class LLMExplanationGenerator:
                 color:white;
             '>
                 <h4 style='margin-top:0;color:white;'>
-                    {exp['method'].upper()} • <span style='color:white'>Target: {exp['target']} • {exp['text']}</span>
+                    {exp['method'].upper()} <span style='color:white'></span>
                 </h4>
+                <span style='color:white'> Sentence: {exp['text']} </span><br>
+                <span style='color:white'> Model Label: {exp['target']} </span>
                 <pre style='white-space:pre-wrap;margin-bottom:0;'>{clean_explanation}</pre>
             </div>
             """))
@@ -169,10 +173,7 @@ class LLMExplanationGenerator:
 
          # Handle case where exps is a dictionary of {method: [explanation_objects]}
         if isinstance(exps, dict):
-            print("if case--------------------------------------")
             for method, exp_list in exps.items():
-                print(f"method---------------------------------{method}")
-                print(f"exp list---------------------------------{len(exp_list)}")
                 # exp_list = exp_list if isinstance(exp_list, list) else [exp_list]
                 for exp in exp_list:
                     prompt = self._create_prompt(exp)
@@ -196,7 +197,6 @@ class LLMExplanationGenerator:
                         continue
         # Handle case where exps is a single explanation or list
         else:
-            print("else case------------------------------------------------------------------")
             exp_list = [exps] if not isinstance(exps, list) else exps
             for exp in exp_list:
                 prompt = self._create_prompt(exp)

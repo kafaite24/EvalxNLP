@@ -2,9 +2,11 @@ import pandas as pd
 import shelve
 import hashlib
 from typing import Dict, List, Optional, Tuple
+from pathlib import Path
+import json
+import pickle
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from evaluators import SoftSufficiencyEvaluator, FADEvaluator, AUPRCEvaluator, SparsenessEvaluator, IOUF1Evaluator,TokenF1Evaluator, SoftComprehensivenessEvaluator, ComplexityEvaluator, AUCTPEvaluator
 from explainers import InputXGradientExplainer, IntegratedGradientsExplainer,DeepLiftExplainer, LimeExplainer, SHAPExplainer, SHAPIQExplainer, GuidedBackpropExplainer
 from explanation import Explanation
@@ -98,6 +100,7 @@ class XAIFramework:
 
             # Save the raw results to an Excel file if a save path is provided
             if save_path:
+                Path(save_path).parent.mkdir(parents=True, exist_ok=True)
                 results_df.to_excel(save_path, index=False)
                 print(f"Raw results saved to {save_path}")
                 
@@ -108,24 +111,24 @@ class XAIFramework:
             print(f"Error generating explainer table for dataset: {e}")
             return pd.DataFrame()
     
-    def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test",save_path: Optional[str] = None) -> pd.DataFrame:
+    def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test",save_metrics_path: Optional[str] = None,save_scores_path: Optional[str] = None) -> pd.DataFrame:
         """
         Generate a table with results for all explainers and metrics for the entire dataset.
         """
         try:
-            dataset_metrics = self.get_evaluation_metrics(input_texts, labels, rationales, extra_params)
-            pivot_table = self.create_pivot_table(dataset_metrics,save_path)
+            dataset_metrics = self.get_evaluation_metrics(input_texts, labels, rationales, save_scores_path= save_scores_path)
+            pivot_table = self.create_pivot_table(dataset_metrics,save_metrics_path)
             return pivot_table
         except Exception as e:
             print(f"Error generating explainer table for dataset: {e}")
 
-    def get_evaluation_metrics(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]], extra_params: Optional[Dict] = None) -> Dict[str, Dict[str, float]]:
+    def get_evaluation_metrics(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]], extra_params: Optional[Dict] = None,save_scores_path: Optional[str] = None) -> Dict[str, Dict[str, float]]:
         """
         Retrieve evaluation metrics for a model, explainer, and dataset, either from cache or by computation.
         Now supports a list of explainer names.
         """
         try:           
-            explainer_results = self.get_feature_importance_for_dataset(input_texts, labels, rationales)
+            explainer_results = self.get_feature_importance_for_dataset(input_texts, labels, rationales, output_file=save_scores_path)
             metrics = self.compute_evaluation_metrics(explainer_results)
             return metrics
         except Exception as e:
@@ -185,7 +188,7 @@ class XAIFramework:
 
         return processed_texts
 
-    def get_feature_importance_for_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]]=None, extra_params: Optional[Dict] = None, split_type: str = "test") -> Dict[str, List[Explanation]]:
+    def get_feature_importance_for_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]]=None, extra_params: Optional[Dict] = None, split_type: str = "test",output_file: Optional[str] = None) -> Dict[str, List[Explanation]]:
         """
         Compute feature importance scores for the entire dataset, for all explainer methods.
         Now using the output from xai_framework.load_fields_from_dataset.
@@ -203,25 +206,75 @@ class XAIFramework:
         """
         
         processed_texts = self.process_text_list(input_texts)
+        all_explanations = {}
         try:
-            all_explanations = {}
-            indices = range(len(processed_texts))
-
-            for instance_id in indices:
+            for instance_id, (text, target_label) in enumerate(zip(processed_texts, labels)):
                 print(f"Processing instance {instance_id}")
-                text = processed_texts[instance_id]
-                target_label = labels[instance_id]
-                rationale = rationales[instance_id] if rationales is not None else None
-            
-                explainer_results = self.get_feature_importance_for_instance(text, target_label, rationale, instance_id)
+                rationale = rationales[instance_id] if rationales else None
+                explainer_results = self.get_feature_importance_for_instance(
+                    text, target_label, rationale, instance_id
+                )
+                
                 for explainer_name, explanation in explainer_results.items():
                     if explainer_name not in all_explanations:
                         all_explanations[explainer_name] = []
-                    all_explanations[explainer_name].append(explanation)
-            return all_explanations
+                    all_explanations[explainer_name].append(explanation) 
+
+            if output_file:
+                self._save_explanations(all_explanations, output_file)
+                
         except Exception as e:
-            print(f"Error computing feature importance for dataset: {e}")
+            print(f"Error computing feature importance: {e}")
             return {}
+        
+        return all_explanations
+
+        # try:
+        #     all_explanations = {}
+        #     indices = range(len(processed_texts))
+
+        #     for instance_id in indices:
+        #         print(f"Processing instance {instance_id}")
+        #         text = processed_texts[instance_id]
+        #         target_label = labels[instance_id]
+        #         rationale = rationales[instance_id] if rationales is not None else None
+            
+        #         explainer_results = self.get_feature_importance_for_instance(text, target_label, rationale, instance_id)
+        #         for explainer_name, explanation in explainer_results.items():
+        #             if explainer_name not in all_explanations:
+        #                 all_explanations[explainer_name] = []
+        #             all_explanations[explainer_name].append(explanation)
+
+        #     return all_explanations
+        # except Exception as e:
+        #     print(f"Error computing feature importance for dataset: {e}")
+        #     return {}
+
+    def _save_explanations(self, explanations, file_path: str):
+        # Convert explanations to serializable format
+        serializable_explanations = {}
+        for explainer_name, explanation_list in explanations.items():
+            serializable_explanations[explainer_name] = [
+                {
+                    'text': exp.text,
+                    'tokens': [str(token) for token in exp.tokens],
+                    'scores': exp.scores.tolist() if hasattr(exp.scores, 'tolist') else exp.scores,
+                    'explainer': str(exp.explainer),
+                    'target': str(exp.target)
+                }
+                for exp in explanation_list
+            ]
+    
+        # Ensure directory exists
+        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+             # Use encoding='utf-8' explicitly
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(serializable_explanations, f, indent=2, ensure_ascii=False)
+            print(f"Saved explanations to {file_path}")
+        except Exception as e:
+            print(f"Error saving explanations: {e}")
 
     def get_feature_importance_for_instance(self, text: str, target_label: int, rationale: Optional[str], extra_params: Optional[Dict] = None) -> Dict[str, Explanation]:
         """
@@ -239,11 +292,15 @@ class XAIFramework:
                         all_results[explainer.NAME] = cache[cache_key]
                     else:
                         print(f"Computing explanation for {explainer.NAME}")
-                        explanation = explainer.compute_feature_importance(text, target=target_label)
-                        explanation = lp_normalize([explanation])
-                        explanation.rationale = rationale
-                        cache[cache_key] = explanation
-                        all_results[explainer.NAME] = explanation
+                        try:
+                            explanation = explainer.compute_feature_importance(text, target=target_label)
+                            explanation = lp_normalize([explanation])
+                            explanation.rationale = rationale
+                            cache[cache_key] = explanation
+                            all_results[explainer.NAME] = explanation
+                        except Exception as e:
+                            print(e)
+                            continue
 
             return all_results
         except Exception as e:
