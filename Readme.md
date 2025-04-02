@@ -1,131 +1,87 @@
-# EvalNLP Framework
+<h1 align="center">
+  <span style="color: #2b8cbe;">EvalxNLP</span>
+  <br>
+  <span style="font-size: 0.4em; color: #636363;">Benchmarking Framework for Explainability Methods in NLP</span>
+</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python">
+  <img src="https://img.shields.io/badge/Version-1.0.0-orange" alt="Version">
+</p>
+
+A comprehensive toolbox for benchmarking explainability techniques in NLP, featuring:
+- Multiple explanation methods
+- Quantitative evaluation metrics
+- Natural language interpretation via LLMs
+- Interactive visualization
 
 ## Table of Contents
-
-- [Introduction](#introduction)
-  - [Explainers](#explainers)
-  - [Evaluation Metrics](#metrics)
-- [Getting Started](#getting-started)
+- [Key Features](#key-features)
 - [Installation](#installation)
-- [Usage](#usage)
-  - [Explain and Evaluate](#explain-and-evaluate)
-  - [Loading the Dataset](#loading-the-dataset)
-  - [Explain and Benchmark](#explain-and-benchmark)
+- [Quick Start](#quick-start)
+- [Advanced Usage](#advanced-usage)
 - [Tutorials](#tutorials)
 
-## Introduction
+## Key Features
 
-EvalNLP is an easy-to-use yet comprehensive toolbox that enables the quantitative evaluation, comparison, and benchmarking of post-hoc explainable AI methods, particularly feature attribution methods. It offers a comprehensive, end-to-end pipeline to assess the performance and reliability of these explanation methods.
+### 🧠 Supported Explainers
+| Method | Paper |
+|--------|-------|
+| Saliency | [Simonyan et al. (2014)](https://arxiv.org/abs/1312.6034) |
+| GradientxInput | [Simonyan et al. (2014)](https://arxiv.org/abs/1312.6034) |
+| DeepLift | [Shrikumar et al. (2019)](https://arxiv.org/abs/1704.02685) |
+| Guided BackProp | [Springenberg et al. (2015)](https://arxiv.org/abs/1412.6806) |
+| Integrated Gradients | [Sundararajan et al. (2017)](https://arxiv.org/abs/1703.01365) |
+| SHAP | [Lundberg & Lee (2017)](https://arxiv.org/abs/1705.07874) |
+| LIME | [Ribeiro et al. (2016)](https://arxiv.org/abs/1602.04938) | 
+| SHAP-I | [Muschalik et al. (2024)](https://arxiv.org/abs/2410.01649) |
 
-### Explainers
 
-This project supports several explanation methods to help understand the model’s predictions. Each method attributes importance to input features (tokens) in different ways:
+### 📊 Evaluation Metrics
+**Faithfulness**
+- Soft Comprehensiveness ([Zhao & Aletras 2023](https://aclanthology.org/2023.acl-long.261/))
+- Soft Sufficiency ([Zhao & Aletras 2023](https://aclanthology.org/2023.acl-long.261/))
+- FAD ([Ngai & Rudzicz (2022)](https://aclanthology.org/2022.bionlp-1.33))
+- AUCTP ([Atanasova 2020](https://arxiv.org/abs/2009.13295))
 
--**Saliency** [https://arxiv.org/abs/1312.6034](Simonyan et al., 2014)
-Uses plain gradients to measure feature influence on the model’s prediction.
+**Plausibility** 
+- Token F1 score ([DeYoung et al. 2020](https://aclanthology.org/2020.acl-main.408/))
+- IOU F1 score ([DeYoung et al. 2020](https://aclanthology.org/2020.acl-main.408/))
+- AUPRC ([DeYoung et al. 2020](https://aclanthology.org/2020.acl-main.408/))
 
--**GradientxInput** [https://arxiv.org/abs/1312.6034](Simonyan et al., 2014)
-Uses gradients multiplied by input embeddings to measure feature influence on the model’s prediction.
+**Complexity**
+- Sparseness ([Chalasani et al. 2020](https://arxiv.org/abs/1810.06583))
+- Complexity ([Bhatt et al. 2020](https://arxiv.org/abs/2005.00631))
 
--**Integrated Gradient** [https://arxiv.org/abs/1703.01365](Sundararajan et al., 2017)
-Computes gradients from a baseline input to the actual input, aggregating them to measure each feature’s contribution.
+### 💡 LLM Interpretation
+- Automatic natural language explanations from LLMs
+- HTML/JSON output formats
+- Jupyter notebook integration
 
--**Guided Backprop** [https://arxiv.org/abs/1412.6806](Springenberg et al.,2015)
-Modifies backpropagation to mask negative gradients, highlighting features with positive contributions to the prediction.
-
--**DeepLift** [https://arxiv.org/abs/1704.02685](Shrikumar et al., 2019)
-Compares model outputs relative to a baseline, propagating differences across the network to determine feature importance.
-
--**SHAP** [https://arxiv.org/abs/1705.07874](Lundberg & Lee, 2017)
-Uses Shapley values from cooperative game theory to fairly distribute feature importance across all possible feature subsets.
-
--**SHAPIQ** [https://arxiv.org/abs/2410.01649](Muschalik et al., 2024)
-A variant of SHAP designed for classification tasks, refining Shapley value approximations for better interpretation in classification problems.
-
--**LIME** [https://arxiv.org/abs/1602.04938](Ribeiro et al., 2016)
-A model-agnostic method that explains predictions by approximating the model with a simpler surrogate model in the local neighborhood of the instance.
-
-### Metrics
-
-This library aims to aggregate and implement evaluation metrics from the XAI literature to automate XAI quantification. These metrics generally fall into one of three main categories: faithfulness, plausibility, complexity. Our library provides implementations of the following evaluation metrics:
-
-#### Faithfulness:
-
-Measures how well the explanations reflect the model’s predictive behavior.
-
-**Soft Comprehensiveness** [https://aclanthology.org/2023.acl-long.261/](Zhao and Aletras, 2023)
-
-**Soft Sufficiency** [https://aclanthology.org/2023.acl-long.261/](Zhao and Aletras, 2023)
-
-**FAD** [https://aclanthology.org/2022.bionlp-1.33/](Ngai and Rudzicz, 2022)
-
-**AUCTP** [https://arxiv.org/abs/2009.13295] (Atanasova,2020)
-Computes the area under the curve where the x-axis is the proportion of features removed and the y-axis is the performance change
-
-#### Plausibility:
-
-Assesses how intuitively the explanations align with human understanding.
-
-**Area-Under-Precision-Recall-Curve** [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
-Evaluates how well the explanation prioritizes truly important tokens based on precision-recall tradeoffs.
-
-**Token F1** [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
-Measures the overlap between predicted important tokens and human-annotated tokens.
-
-**Token Intersection Over Union** [https://aclanthology.org/2020.acl-main.408/](DeYoung et al., 2020)
-Assesses the similarity between explanation token sets and ground-truth annotations.
-
-### Complexity
-
-Evaluates the conciseness of explanations (fewer features imply higher clarity).
-
-**Sparseness** [https://arxiv.org/abs/1810.06583](Chalasani et al., 2020): uses the Gini Index for measuring, if only highly attributed features are truly predictive of the model output
-
-**Complexity** [https://arxiv.org/abs/2005.00631](Bhatt et al., 2020): computes the entropy of the fractional contribution of all features to the total magnitude of the attribution individually
-
-## Getting Started
-
-### Prerequisites
-
-The project is entirely made in Python 3.10 and tested on Windows 11 64 bits.
-
-### Installation
-
-EvalNLP project can be installed from source using:
-
-1. Clone the repo
+## Installation
 
 ```bash
 git clone https://github.com/kafaite24/EvalNLP.git
-```
-
-2. Install the requirements
-
-```bash
+cd EvalNLP
 pip install -r requirements.txt
 ```
 
-### Usage
+## Quick Start
 
-#### Explain and Evaluate
+Below are the steps on how you can use the framework to generate, visualize, interpret and benchmark explanations for single sentences or entire/sub-samples of the datasets:
 
-Below is the example of how you can use the library in a very simple way to generate explanations of a given input sentence for any explainers you want.
-
-Initialize the model and tokenizer
+#### 🛠️ 1. Initialize (Common First Step)
 
 ```python
+from evalnlp import XAIFramework
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from explainers import DeepLiftExplainer, GuidedBackpropExplainer
+from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, FADEvaluator, SparsenessEvaluator
+
 
 model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
-```
-
-Initialize explainers and evaluators that you want
-
-```python
-from explainers import DeepLiftExplainer, GuidedBackpropExplainer
-from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, FADEvaluator, SparsenessEvaluator
 
 gb= GuidedBackpropExplainer(model,tokenizer)
 dl= DeepLiftExplainer(model,tokenizer)
@@ -134,33 +90,75 @@ sc= SoftComprehensivenessEvaluator(model,tokenizer)
 fad= FADEvaluator(model,tokenizer)
 sp= SparsenessEvaluator(model,tokenizer)
 auctp= AUCTPEvaluator(model,tokenizer)
-```
 
-Initialize the Benchmark class
-
-```python
 xai_framework = XAIFramework(model, tokenizer,explainers=[gb,dl], evaluators=[auprc,auctp,sc,fad,sp,cx,iou])
 ```
 
-Explain and visualize the scores
+### 🔍 Single Instance
 
+#### 2. Generate Explanations
 ```python
-sentence = "I love the product, but the customer service was terrible."
-exps= xai_framework.explain(input_data=sentence,target_label="negative")
+sentence= "A masterpiece of how not to make a movie."
+xai_framework.classify_text(sentence)
+exps= xai_framework.explain(input_data=sentence,target_label="positive")
+```
+
+#### 3. Visualize Explanations
+```python
 xai_framework.visualize(exps)
-
 ```
 
-You can evaluate these explanations for the defined evaluation metrics as follows.
-You have the flexibility to define the explainers and evaluators you want the results for.
+#### 4: Understanding Explanation Scores
 
 ```python
-xai_framework.evaluate_single_sentence(sentence, target_label="negative", human_rationale=[0, 1, 0, 1, 0,0,0,0,1,0,1,0])
+from LLMExplanationGenerator import LLMExplanationGenerator
+import pandas as pd
+from IPython.display import display, HTML
+
+api_key = "XXX"
+explainer = LLMExplanationGenerator(api_key=api_key)
+
+# Generate and save explanations (returns both explanations and file paths)
+explanations, saved_files = explainer.generate_and_save_explanations(
+    exps=exps,
+    output_format="both"  # or "json"/"html"
+)
+
+# Display in notebook
+explainer.display_explanations(explanations)
+
+# Print saved locations
+print(f"Saved files: {[str(p) for p in saved_files]}")
+```
+#### 5: Evaluate Explanations
+
+```python
+eval_metrics=xai_framework.evaluate_single_sentence(sentence, target_label="positive")
 ```
 
-#### Loading the Dataset
+#### 6: Visualize Results
 
-First, load your dataset using the [load_fields_from_dataset] function as follows. You can load a huggingface model or csv/excel file.
+```python
+xai_framework.create_pivot_table(eval_metrics, save_path="../results/testing_1.xlsx")
+```
+
+#### 7: Understanding Evaluation Metrics
+
+```python
+from EvaluationMetricsExplainer import EvaluationMetricsExplainer
+
+api_key = "XXX"
+explainer = EvaluationMetricsExplainer(api_key=api_key)
+
+results = explainer.explain_results(eval_metrics)
+# json_path, html_path = explainer.save_results(results)
+explainer.display_results(results)
+```
+### 📊 Dataset (Entire/Multiple Instances)
+
+Users can explain and benchmark datasets from Hugging Face or local files (e.g., CSV or Excel) using the [DatasetLoader] class. The framework supports text classification tasks, such as sentiment analysis, hate speech detection, and natural language inference.
+
+#### 2. Loading the Dataset
 
 ```python
 from dataset_loaders.dataset_args import LoadDatasetArgs
@@ -179,20 +177,92 @@ dataset_args_ = LoadDatasetArgs( # Path to the dataset file
 results = load_fields_from_dataset(dataset_args_)
 ```
 
-#### Explain and Benchmark
+#### 3. Data Post-Processing
 
-With a single line of code, you can explain and evaluate an entire dataset or even sub-samples of it.
+For datasets requiring format conversion, we provide specialized processors. Below is an example for the [Movie Reviews](https://huggingface.co/datasets/eraser-benchmark/movie_rationales) dataset:
 
 ```python
-xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rationale_sample)
+from dataset_loaders.movie_rationales import MovieRationalesProcessor
+
+input_texts= results['text']
+labels= results['labels']
+rationales= results['rationales']
+
+mv= MovieRationalesProcessor(tokenizer)
+processed_rationales= mv.process_dataset(input_texts, labels, rationales)
+```
+
+#### 4. Generate Explanations
+
+```python
+#Select a sub-sample if you want
+input_texts_sample=results['text'][:2]
+labels_sample=results['labels'][:2]
+rationale_sample= processed_rationales[:2]
+
+exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample)
+```
+
+#### 5. Understanding Importance Scores
+
+```python
+api_key = "XXX"
+explainer = LLMExplanationGenerator(api_key=api_key)
+explanations, saved_files = explainer.generate_and_save_explanations(
+    exps=exp_scores,
+    output_format="html"
+)
+explainer.display_explanations(explanations)
+print(f"Saved files: {[str(p) for p in saved_files]}")
+```
+
+#### 6. Evaluate Explanations
+
+```python
+metrics= xai_framework.compute_evaluation_metrics(exp_scores)
+```
+
+#### 7. Visualize Metrics
+
+```python
+xai_framework.create_pivot_table(metrics, save_path="../results/testing.xlsx")
+```
+
+#### 8. Understanding Metrics
+
+```python
+api_key = "XXX"
+explainer = EvaluationMetricsExplainer(api_key=api_key)
+results = explainer.explain_results(metrics)
+json_path, html_path = explainer.save_results(results)
+explainer.display_results(results)
+```
+
+## Advanced Usage
+
+### GPU
+
+To enable GPU acceleration for explanation generation and metric computation, ensure your model and framework components are properly initialized on the target device as follows:
+
+```python
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
+
+ig= IntegratedGradientsExplainer(model,tokenizer,device=device)
+sc= SoftComprehensivenessEvaluator(model,tokenizer,device=device)
+
+xai_framework = XAIFramework(model, tokenizer,explainers=[ig], evaluators=[sc], device=device)
 ```
 
 ## Tutorials
 
 Further tutorials are available that demonstrate usage of the library for different usecases. Please see notebooks in the examples folder which include:
 
-[Sentiment Analysis example](./examples/tutorial_sentiment_analysis.ipynb)
-
-[Hate Speech Detection example](./examples/tutorial_hate_speech_detection.ipynb)
-
-[Natural Language Inference example](./examples/tutorial_nli.ipynb)
+|📚 Notebook |Tutorials |
+|--------|-------|
+| [Sentiment Analysis example](./examples/tutorial_sentiment_analysis.ipynb) |	Benchmarking movie reviews |
+| [Hate Speech Detection example](./examples/tutorial_hate_speech_detection.ipynb)	| Evaluating sensitive content |
+| [Natural Language Inference example](./examples/tutorial_nli.ipynb) | Analyzing premise-hypothesis relationships |
