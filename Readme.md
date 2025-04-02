@@ -62,8 +62,8 @@ A comprehensive toolbox for benchmarking explainability techniques in NLP, featu
 ## Installation
 
 ```bash
-git clone https://github.com/kafaite24/EvalNLP.git
-cd EvalNLP
+git clone [https://github.com/kafaite24/EvalxNLP.git](https://github.com/kafaite24/EvalxNLP.git)
+cd EvalxNLP
 pip install -r requirements.txt
 ```
 
@@ -74,7 +74,7 @@ Below are the steps on how you can use the framework to generate, visualize, int
 #### 🛠️ 1. Initialize (Common First Step)
 
 ```python
-from evalnlp import XAIFramework
+from evalxnlp import XAIFramework
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from explainers import DeepLiftExplainer, GuidedBackpropExplainer
 from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, FADEvaluator, SparsenessEvaluator
