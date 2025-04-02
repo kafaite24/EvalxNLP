@@ -1,7 +1,7 @@
 import pandas as pd
 import shelve
 import hashlib
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple,Union
 from pathlib import Path
 import json
 import pickle
@@ -74,43 +74,128 @@ class XAIFramework:
             input_str += f"_{str(extra_params)}"
         cache_key = hashlib.md5(input_str.encode('utf-8')).hexdigest()
         return cache_key
+   
     
-    def create_pivot_table(self,dataset_metrics: Dict,save_path: Optional[str] = None) -> pd.DataFrame:
+    def create_pivot_table(self, input_data: Union[Dict, str], save_path: Optional[str] = None) -> pd.DataFrame:
         """
-        Create a pivot table from the results DataFrame.
-
-        Args:
-            results_df (pd.DataFrame): DataFrame containing the results.
-
-        Returns:
-            pd.DataFrame: Pivot table.
+        Create a styled pivot table with:
+        - Metrics grouped by category (faithfulness → plausibility → complexity)
+        - Lighter pastel color scheme (red, blue, purple)
+        - No symbols in column names
+        - Proper column display
         """
+        
         try:
-            results = []
-            for explainer_name, explainer_metrics in dataset_metrics.items():
-                for evaluator_name, metric_value in explainer_metrics.items():
-                    result = {
-                        "Explainer": explainer_name,
-                        "Evaluator": evaluator_name,
-                        "Metric Value": metric_value
-                    }
-                    results.append(result)
+            # Load data from either dict or Excel
+            if isinstance(input_data, dict):
+                results = []
+                for explainer_name, explainer_metrics in input_data.items():
+                    for evaluator_name, metric_value in explainer_metrics.items():
+                        results.append({
+                            "Explainer": explainer_name,
+                            "Evaluator": evaluator_name,
+                            "Metric Value": metric_value
+                        })
+                results_df = pd.DataFrame(results)
+            elif isinstance(input_data, str) and input_data.endswith('.xlsx'):
+                results_df = pd.read_excel(input_data)
+            else:
+                raise ValueError("Input must be dictionary or Excel path")
 
-            results_df = pd.DataFrame(results)
+            # Define metric categories and directions (in desired display order)
+            METRIC_CONFIG = {
+                # Faithfulness (pastel red)
+                'Soft Comprehensiveness ↑': {'category': 'faithfulness', 'direction': 1},
+                'Soft Sufficiency ↓': {'category': 'faithfulness', 'direction': -1},
+                'AUTPC ↓': {'category': 'faithfulness', 'direction': -1},
+                'FAD ↓': {'category': 'faithfulness', 'direction': -1},
+                
+                # Complexity (pastel purple)
+                'Complexity ↓': {'category': 'complexity', 'direction': -1},
+                'Sparseness ↑': {'category': 'complexity', 'direction': 1},
 
-            # Save the raw results to an Excel file if a save path is provided
+                 # Plausibility (pastel blue)
+                'IOU F1 score ↑': {'category': 'plausibility', 'direction': 1},
+                'Token F1 score ↑': {'category': 'plausibility', 'direction': 1},
+                'AUPRC ↑': {'category': 'plausibility', 'direction': 1}
+            }
+            
+            # Create pivot table with columns in specified order
+            ordered_metrics = [m for m in METRIC_CONFIG.keys() if m in results_df['Evaluator'].unique()]
+            pivot_table = results_df.pivot(index="Explainer", columns="Evaluator", values="Metric Value")[ordered_metrics]
+            # Get min/max values per metric for consistent coloring
+            metric_ranges = {
+                metric: (results_df.loc[results_df['Evaluator'] == metric, 'Metric Value'].min(),
+                        results_df.loc[results_df['Evaluator'] == metric, 'Metric Value'].max())
+                for metric in ordered_metrics
+            }
+
+            def highlight_best(series):
+                config = METRIC_CONFIG.get(series.name)
+                if not config:
+                    return [''] * len(series)
+                
+                is_best = series == series.max() if config['direction'] == 1 else series == series.min()
+                return ['font-weight: bold' if v else '' for v in is_best]
+
+            def color_by_metric(val, metric_name):
+                if pd.isna(val):
+                    return 'background-color: white; color: #555555'
+                
+                config = METRIC_CONFIG.get(metric_name)
+                if not config:
+                    return ''
+                
+                # Normalize value (0=worst, 1=best)
+                vmin, vmax = metric_ranges[metric_name]
+                val_norm = 0.5 if vmax == vmin else (val - vmin) / (vmax - vmin)
+                if config['direction'] == -1:
+                    val_norm = 1 - val_norm
+
+                # Wider intensity range for better contrast (120-255)
+                intensity = 130 + int(135 * val_norm)  # 120-255 range
+                
+                # Dynamic text color (white for dark backgrounds)
+                text_color = 'black'
+
+                if config['category'] == 'faithfulness':
+                    # Distinct red gradient (no pink shift)
+                    return f'background-color: rgb({min(255, intensity + 50)}, {max(100, 255 - intensity)}, {max(100, 255 - intensity)}); color: {text_color}'
+                
+                elif config['category'] == 'plausibility':
+                    # Crisp blue gradient (no yellow/green)
+                    return f'background-color: rgb({max(120, 255 - intensity)}, {max(120, 255 - intensity)}, {intensity}); color: {text_color}'
+                
+                elif config['category'] == 'complexity':
+                    # Clear purple gradient (no gray/green)
+                    return f'background-color: rgb({intensity}, {max(100, 255 - intensity)}, {intensity}); color: {text_color}'
+
+            # Then modify the styling application:
+            styled_table = pivot_table.style
+            for metric in pivot_table.columns:
+                styled_table = styled_table.applymap(
+                    lambda x, m=metric: color_by_metric(x, m),
+                    subset=[metric]
+                ).apply(
+                    highlight_best, 
+                    subset=[metric]
+                )
+           
+            # Save results
             if save_path:
                 Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-                results_df.to_excel(save_path, index=False)
-                print(f"Raw results saved to {save_path}")
-                
-            pivot_table = results_df.pivot(index="Explainer", columns="Evaluator", values="Metric Value")
-            return pivot_table
-        
+                with pd.ExcelWriter(save_path) as writer:
+                    results_df.to_excel(writer, sheet_name='Raw Data', index=False)
+                    pivot_table.to_excel(writer, sheet_name='Pivot Table')
+                    styled_table.to_excel(writer, sheet_name='Styled Results')
+                print(f"Results saved to {save_path}")
+            
+            return styled_table
+            
         except Exception as e:
-            print(f"Error generating explainer table for dataset: {e}")
+            print(f"Error generating pivot table: {e}")
             return pd.DataFrame()
-    
+
     def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test",save_metrics_path: Optional[str] = None,save_scores_path: Optional[str] = None) -> pd.DataFrame:
         """
         Generate a table with results for all explainers and metrics for the entire dataset.
@@ -228,27 +313,6 @@ class XAIFramework:
             return {}
         
         return all_explanations
-
-        # try:
-        #     all_explanations = {}
-        #     indices = range(len(processed_texts))
-
-        #     for instance_id in indices:
-        #         print(f"Processing instance {instance_id}")
-        #         text = processed_texts[instance_id]
-        #         target_label = labels[instance_id]
-        #         rationale = rationales[instance_id] if rationales is not None else None
-            
-        #         explainer_results = self.get_feature_importance_for_instance(text, target_label, rationale, instance_id)
-        #         for explainer_name, explanation in explainer_results.items():
-        #             if explainer_name not in all_explanations:
-        #                 all_explanations[explainer_name] = []
-        #             all_explanations[explainer_name].append(explanation)
-
-        #     return all_explanations
-        # except Exception as e:
-        #     print(f"Error computing feature importance for dataset: {e}")
-        #     return {}
 
     def _save_explanations(self, explanations, file_path: str):
         # Convert explanations to serializable format
@@ -413,9 +477,16 @@ class XAIFramework:
                         continue
 
             results_df = pd.DataFrame(results)
-            pivot_df = results_df.pivot_table(index="Explainer", columns="Evaluator", values="Value")
-
-            return pivot_df
+            # Convert DataFrame to dictionary in the required format
+            results_dict = {
+                explainer: {
+                    evaluator: metric_value 
+                    for evaluator, metric_value in group.set_index('Evaluator')['Value'].items()
+                }
+                for explainer, group in results_df.groupby('Explainer')
+            }
+            
+            return results_dict
         except Exception as e:
             print(f"Error evaluating single sentence: {e}")
             return pd.DataFrame()

@@ -82,7 +82,7 @@ def calculate_f1(predicted, ground_truth):
 
 
 class IOUF1Evaluator(BaseEvaluator):
-    NAME = "IOU F1 score"
+    NAME = "IOU F1 score ↑"
     """
     Class to evaluate faithfulness of saliency explanations using IOU F1-score.
     """
@@ -147,7 +147,7 @@ class IOUF1Evaluator(BaseEvaluator):
 
 
 class TokenF1Evaluator(BaseEvaluator):
-    NAME = "Token F1 score"
+    NAME = "Token F1 score ↑"
     """
     Class to evaluate faithfulness of saliency explanations using Token F1-score.
     """

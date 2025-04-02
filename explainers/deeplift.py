@@ -7,7 +7,7 @@ import torch.nn as nn
 
 
 class DeepLiftExplainer(BaseExplainer):
-    NAME = "deeplift"
+    NAME = "DL"
 
     def __init__(
         self,

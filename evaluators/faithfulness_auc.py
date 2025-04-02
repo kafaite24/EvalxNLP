@@ -6,7 +6,7 @@ from .baseevaluator import BaseEvaluator
 
 
 class AUCTPEvaluator((BaseEvaluator)):
-    NAME = "Area under TP Curve"
+    NAME = "AUTPC ↓"
 
     def __init__(self, model, tokenizer,device="cpu", batch_size=32):
         """

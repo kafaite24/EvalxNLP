@@ -10,7 +10,7 @@ class SparsenessEvaluator(BaseEvaluator):
     Attributes:
         model (callable): model to explain.
     """
-    NAME = "Sparseness"
+    NAME = "Sparseness ↑"
 
     def __init__(self, model, tokenizer, device="cpu"):
         """Initializes Sparseness with model and task."""

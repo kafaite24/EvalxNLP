@@ -6,7 +6,7 @@ from .explanation import Explanation
 from utils.text_classifier_utils import TextClassifierEngine
 
 class InputXGradientExplainer(BaseExplainer):
-    NAME = "gradient"
+    NAME = "G"
 
     def __init__(
         self,
@@ -22,9 +22,9 @@ class InputXGradientExplainer(BaseExplainer):
         self._device = device
 
         if self.multiply_by_inputs:
-            self.NAME += "xinput"
+            self.NAME += "xI"
         else:
-            self.NAME = 'saliency'
+            self.NAME = 'Saliency'
 
     def compute_feature_importance(
         self,

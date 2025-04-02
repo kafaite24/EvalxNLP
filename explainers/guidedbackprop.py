@@ -5,7 +5,7 @@ from explanation import Explanation
 import torch.nn as nn
 
 class GuidedBackpropExplainer(BaseExplainer):
-    NAME = "guidedbackprop"
+    NAME = "GBP"
 
     def __init__(
         self,

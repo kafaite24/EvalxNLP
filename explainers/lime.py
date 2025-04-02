@@ -10,7 +10,7 @@ from .explanation import Explanation
 
 
 class LimeExplainer(BaseExplainer):
-    NAME = "lime"
+    NAME = "LIME"
 
     def compute_feature_importance(
         self,

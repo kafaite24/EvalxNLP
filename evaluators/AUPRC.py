@@ -7,7 +7,7 @@ class AUPRCEvaluator(BaseEvaluator):
     """
     Class to evaluate saliency explanations using AUPRC (Area Under the Precision-Recall Curve).
     """
-    NAME = "Area under PR Curve"
+    NAME = "AUPRC ↑"
 
     def __init__(self, model, tokenizer, device="cpu"):
         """

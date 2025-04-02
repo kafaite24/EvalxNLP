@@ -5,7 +5,7 @@ from captum.attr import InputXGradient, IntegratedGradients, Saliency
 from explanation import Explanation
 
 class IntegratedGradientsExplainer(BaseExplainer):
-    NAME = "integratedgradient"
+    NAME = "IG"
 
     def __init__(
         self,

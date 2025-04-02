@@ -14,7 +14,7 @@ class ComplexityEvaluator(BaseEvaluator):
         - `Evaluating and Aggregating Feature-based Model Explanations
         <https://arxiv.org/abs/2005.00631>`
     """
-    NAME = "Complexity"
+    NAME = "Complexity ↓"
 
     def __init__(self, model, tokenizer, device="cpu"):
         """

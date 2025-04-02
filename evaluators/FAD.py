@@ -13,7 +13,7 @@ class FADEvaluator(BaseEvaluator):
     Class to evaluate the impact of feature (token) dropping on text data
     based on saliency scores (e.g., Gradient x Input).
     """
-    NAME = "Feature Attribution Drop"
+    NAME = "FAD ↓"
 
     def __init__(self, model, tokenizer,device="cpu", batch_size=32):
         """

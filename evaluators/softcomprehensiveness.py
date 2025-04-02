@@ -9,7 +9,7 @@ class SoftComprehensivenessEvaluator(BaseEvaluator):
     """
     Class to evaluate Soft Normalized Comprehensiveness using Explanation objects.
     """
-    NAME = "Soft Comprehensiveness"
+    NAME = "Soft Comprehensiveness ↑"
     def __init__(self, model, tokenizer,device="cpu", max_len=512):
         """
         Initialize the evaluator.

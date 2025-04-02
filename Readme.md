@@ -21,8 +21,11 @@ EvalNLP is an easy-to-use yet comprehensive toolbox that enables the quantitativ
 
 This project supports several explanation methods to help understand the model’s predictions. Each method attributes importance to input features (tokens) in different ways:
 
--**Gradient** [https://arxiv.org/abs/1312.6034](Simonyan et al., 2014)
-Uses plain gradients or gradients multiplied by input embeddings to measure feature influence on the model’s prediction.
+-**Saliency** [https://arxiv.org/abs/1312.6034](Simonyan et al., 2014)
+Uses plain gradients to measure feature influence on the model’s prediction.
+
+-**GradientxInput** [https://arxiv.org/abs/1312.6034](Simonyan et al., 2014)
+Uses gradients multiplied by input embeddings to measure feature influence on the model’s prediction.
 
 -**Integrated Gradient** [https://arxiv.org/abs/1703.01365](Sundararajan et al., 2017)
 Computes gradients from a baseline input to the actual input, aggregating them to measure each feature’s contribution.
@@ -44,7 +47,7 @@ A model-agnostic method that explains predictions by approximating the model wit
 
 ### Metrics
 
-This library aims to aggregate and implement evaluation metrics from the XAI literature to automate XAI quantification. These metrics generally fall into one of four main categories: faithfulness, robustness, plausibility, complexity. Our library provides implementations of the following evaluation metrics:
+This library aims to aggregate and implement evaluation metrics from the XAI literature to automate XAI quantification. These metrics generally fall into one of three main categories: faithfulness, plausibility, complexity. Our library provides implementations of the following evaluation metrics:
 
 #### Faithfulness:
 
@@ -54,9 +57,9 @@ Measures how well the explanations reflect the model’s predictive behavior.
 
 **Soft Sufficiency** [https://aclanthology.org/2023.acl-long.261/](Zhao and Aletras, 2023)
 
-**FAD and N-AUC** [https://aclanthology.org/2022.bionlp-1.33/](Ngai and Rudzicz, 2022)
+**FAD** [https://aclanthology.org/2022.bionlp-1.33/](Ngai and Rudzicz, 2022)
 
-**AUC-TP** [https://arxiv.org/abs/2009.13295] (Atanasova,2020)
+**AUCTP** [https://arxiv.org/abs/2009.13295] (Atanasova,2020)
 Computes the area under the curve where the x-axis is the proportion of features removed and the y-axis is the performance change
 
 #### Plausibility:
@@ -84,7 +87,7 @@ Evaluates the conciseness of explanations (fewer features imply higher clarity).
 
 ### Prerequisites
 
-The project is entirely made in Python 3.12 and tested on Windows 11 64 bits.
+The project is entirely made in Python 3.10 and tested on Windows 11 64 bits.
 
 ### Installation
 

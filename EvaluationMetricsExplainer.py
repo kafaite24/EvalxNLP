@@ -12,47 +12,47 @@ class EvaluationMetricsExplainer:
         self.client = Together(api_key=self.api_key)
         
         self.metric_info = {
-            'Soft Comprehensiveness': {
+            'Soft Comprehensiveness ↑': {
                 'description': "Measures how much the model's prediction relies on important tokens by probabilistically perturbing them based on importance scores.",
                 'direction': "higher is better",
                 'range': "0-1 (1 = model completely relies on the important tokens)"
             },
-            'Soft Sufficiency': {
+            'Soft Sufficiency ↓': {
                 'description': "Measures how well important tokens preserve the model's prediction when other tokens are perturbed.",
                 'direction': "lower is better", 
                 'range': "0-1 (1 = important tokens perfectly maintain the prediction)"
             },
-            'Feature Attribution Drop': {
+            'FAD ↓': {
                 'description': "Measures performance impact when dropping top-salient tokens, with curve steepness indicating faithfulness.",
                 'direction': "lower is better",
                 'range': "0-1 (0 = perfect alignment with model's true feature importance)"
             },
-            'Area under TP Curve': {
+            'AUTPC ↓': {
                 'description': "Evaluates explanation faithfulness by measuring performance drop when progressively masking top-salient tokens.",
                 'direction': "lower is better",
                 'range': "0-1 (0 = most faithful, performance drops immediately when critical tokens are masked)"
             },
-            'Area under PR Curve': {
+            'AUPRC ↑': {
                 'description': "Evaluates how well token importance scores match human rationales by computing precision-recall at varying thresholds.",
                 'direction': "higher is better",
                 'range': "0-1 (1 = perfect alignment with human rationale)"
             },
-            'IOU F1 score': {
+            'IOU F1 score ↑': {
                 'description': "Compares explanation against human rationale by measuring token overlap ratio between top-K important tokens and ground truth.",
                 'direction': "higher is better",
                 'range': "0-1 (1 = perfect match with human rationale)"
             },
-            'Token F1 score': {
+            'Token F1 score ↑': {
                 'description': "Computes F1 score between top-K important tokens (predicted) and human rationale (ground truth).",
                 'direction': "higher is better",
                 'range': "0-1 (1 = perfect token-level alignment)"
             },
-            'Complexity': {
+            'Complexity ↓': {
                 'description': "Measures explanation conciseness by computing the entropy of normalized attribution scores. Lower values indicate simpler explanations focusing on few key features, while higher values suggest distributed feature importance",
                 'direction': "lower is better",
                 'range': "0-1"
             },
-            'Sparseness': {
+            'Sparseness ↑': {
                 'description': "Quantifies explanation concentration using the Gini index. Measures whether only highly-attributed features are truly predictive.",
                 'direction': "higher is better",
                 'range': "0-1 (1 = perfectly sparse, 0 = uniform importance across all features)"
@@ -75,7 +75,6 @@ class EvaluationMetricsExplainer:
         """
 
         explanations = {}
-    
         # Convert input to standardized long format
         if isinstance(results_data, pd.DataFrame):
             # DataFrame format - explainers as index, metrics as columns
@@ -99,13 +98,14 @@ class EvaluationMetricsExplainer:
         # Process valid results
         valid_results = df_long.dropna(subset=['Value'])
         
+
         for metric, group in valid_results.groupby('Metric'):
             if metric not in self.metric_info:
                 continue
                 
             info = self.metric_info[metric]
             metric_explanations = {}
-            
+
             for _, row in group.iterrows():
                 prompt = self._create_metric_prompt(
                     metric=metric,
@@ -118,7 +118,6 @@ class EvaluationMetricsExplainer:
                     'value': float(row['Value']),
                     'interpretation': self._query_llm(prompt)
                 }
-            
             if metric_explanations:
                 explanations[metric] = {
                     'definition': info['description'],
@@ -285,8 +284,21 @@ class EvaluationMetricsExplainer:
             f.write(html_content)
 
     def display_results(self, explanations):
-        """Show in notebook"""
-        html_path = Path("temp_display.html")
-        self._generate_html(explanations, html_path)
-        display(HTML(html_path.read_text()))
-        html_path.unlink()
+        """Display with complete style isolation"""
+        from IPython.display import display, HTML
+        import base64
+        import tempfile
+        
+        # Generate HTML
+        with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as f:
+            self._generate_html(explanations, Path(f.name))
+            html_content = Path(f.name).read_text(encoding='utf-8')
+        
+        # Create sandboxed iframe
+        iframe = f"""
+        <iframe srcdoc='{html_content.replace("'", "&apos;")}'
+                style="width:100%; height:600px; border:none;"
+                sandbox="allow-scripts">
+        </iframe>
+        """
+        display(HTML(iframe))

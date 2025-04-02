@@ -11,7 +11,7 @@ from .explanation import Explanation
 
 
 class SHAPExplainer(BaseExplainer):
-    NAME = "shap"
+    NAME = "SHAP"
 
     def __init__(
         self,

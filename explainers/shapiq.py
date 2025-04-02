@@ -6,7 +6,7 @@ from .explanation import Explanation
 
 
 class SHAPIQExplainer(BaseExplainer):
-    NAME = "shapiq"
+    NAME = "SHAP-I"
 
     def __init__(
         self,
