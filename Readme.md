@@ -62,7 +62,7 @@ A comprehensive toolbox for benchmarking explainability techniques in NLP, featu
 ## Installation
 
 ```bash
-git clone [https://github.com/kafaite24/EvalxNLP.git](https://github.com/kafaite24/EvalxNLP.git)
+git clone https://github.com/kafaite24/EvalxNLP.git
 cd EvalxNLP
 pip install -r requirements.txt
 ```
