@@ -1,8 +1,9 @@
 <h1 align="center">
-  <span style="color: #2b8cbe;">EvalxNLP</span>
-  <br>
-  <span style="font-size: 0.4em; color: #636363;">Benchmarking Framework for Explainability Methods in NLP</span>
+  <span>EvalxNLP</span>
 </h1>
+<h2 align="center">
+  <span">Benchmarking Framework for Explainability Methods in NLP</span>
+</h3>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python">
