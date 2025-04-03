@@ -94,6 +94,7 @@ auctp= AUCTPEvaluator(model,tokenizer)
 
 xai_framework = XAIFramework(model, tokenizer,explainers=[gb,dl], evaluators=[auprc,auctp,sc,fad,sp,cx,iou])
 ```
+The `XAIBenchmark` class is the main entry point for the framework. It requires the model and tokenizer, and optionally explainers and evaluators. If not specified, it defaults to all available explainers and evaluators.
 
 ### 🔍 Single Instance
 
@@ -103,11 +104,13 @@ sentence= "A masterpiece of how not to make a movie."
 xai_framework.classify_text(sentence)
 exps= xai_framework.explain(input_data=sentence,target_label="positive")
 ```
+This returns list of Explanation objects for each explainer defined during initialization. The Explanation object includes the sentence text, tokens, importance scores, explainer name, target label, and optional rationale.
 
 #### 3. Visualize Explanations
 ```python
 xai_framework.visualize(exps)
 ```
+This will generate a heatmap showing the importance scores for each token in the input sentence.
 
 #### 4: Understanding Explanation Scores
 
@@ -131,6 +134,9 @@ explainer.display_explanations(explanations)
 # Print saved locations
 print(f"Saved files: {[str(p) for p in saved_files]}")
 ```
+
+The `generate_and_save_explanations()` function saves LLM-generated explanations to `../results/llm_explanations/` in both JSON (structured data) and HTML (visualized report) formats, while the `display_explanations()` function renders interactive LLM explanations directly in Jupyter notebooks for immediate analysis.
+
 #### 5: Evaluate Explanations
 
 ```python
@@ -152,9 +158,11 @@ api_key = "XXX"
 explainer = EvaluationMetricsExplainer(api_key=api_key)
 
 results = explainer.explain_results(eval_metrics)
-# json_path, html_path = explainer.save_results(results)
+json_path, html_path = explainer.save_results(results)
 explainer.display_results(results)
 ```
+The `save_results()` function saves LLM-generated explanations to `../results/llm_explanations/` in both JSON (structured data) and HTML (visualized report) formats, while the `display_results()` function renders interactive LLM explanations directly in Jupyter notebooks for immediate analysis.
+
 ### 📊 Dataset (Entire/Multiple Instances)
 
 Users can explain and benchmark datasets from Hugging Face or local files (e.g., CSV or Excel) using the [DatasetLoader] class. The framework supports text classification tasks, such as sentiment analysis, hate speech detection, and natural language inference.
@@ -201,8 +209,9 @@ input_texts_sample=results['text'][:2]
 labels_sample=results['labels'][:2]
 rationale_sample= processed_rationales[:2]
 
-exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample)
+exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/xxx.json")
 ```
+For multiple sentences as input, results are saved to your specified output file, including for each input: the original text, tokenized output, importance scores, explainer method used, and target model label.
 
 #### 5. Understanding Importance Scores
 
