@@ -5,7 +5,7 @@ import warnings
 import openpyxl
 import torch
 warnings.filterwarnings("ignore")
-
+import os
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from explainers import InputXGradientExplainer, IntegratedGradientsExplainer, DeepLiftExplainer, LimeExplainer, SHAPExplainer, SHAPIQExplainer, GuidedBackpropExplainer
 from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, SoftSufficiencyEvaluator, FADEvaluator, SparsenessEvaluator, ComplexityEvaluator, IOUF1Evaluator,TokenF1Evaluator, AUPRCEvaluator
@@ -14,6 +14,11 @@ from dataset_loaders.movie_rationales import MovieRationalesProcessor
 from dataset_loaders.hatexplain import HateSpeechProcessor
 from LLMExplanationGenerator import LLMExplanationGenerator
 from EvaluationMetricsExplainer import EvaluationMetricsExplainer
+
+
+if 'SLURM_JOB_ID' not in os.environ:
+    print(f"bypassing")
+    os.environ['BYPASS_SLURM_CHECK'] = '1'  # Add this bypass flag
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -42,29 +47,29 @@ auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
 xai_framework = XAIFramework(model, tokenizer,explainers=[g,gb,dl,ixg], evaluators=[cx], device=device)
 
-# dataset_args_ = LoadDatasetArgs(
-#     dataset_name="eraser-benchmark/movie_rationales",
-#     text_field="review",
-#     label_field="label",
-#     rationale_field="evidences",
-#     dataset_split="test",
-# )
+dataset_args_ = LoadDatasetArgs(
+    dataset_name="eraser-benchmark/movie_rationales",
+    text_field="review",
+    label_field="label",
+    rationale_field="evidences",
+    dataset_split="test",
+)
 
-# # Load the dataset fields
-# results = load_fields_from_dataset(dataset_args_)
-# input_texts= results['text']
-# labels= results['labels']
-# rationales= results['rationales']
+# Load the dataset fields
+results = load_fields_from_dataset(dataset_args_)
+input_texts= results['text']
+labels= results['labels']
+rationales= results['rationales']
 
-# mv= MovieRationalesProcessor(tokenizer)
-# processed_rationales= mv.process_dataset(input_texts, labels, rationales)
+mv= MovieRationalesProcessor(tokenizer)
+processed_rationales= mv.process_dataset(input_texts, labels, rationales)
 
-# #Select a sub-sample if you want
-# input_texts_sample=input_texts[:2]
-# labels_sample=labels[:2]
-# rationale_sample= processed_rationales[:2]
+#Select a sub-sample if you want
+input_texts_sample=input_texts[:2]
+labels_sample=labels[:2]
+rationale_sample= processed_rationales[:2]
 
-# exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
+exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
 
-# metrics= xai_framework.compute_evaluation_metrics(exp_scores)
-# xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
+metrics= xai_framework.compute_evaluation_metrics(exp_scores)
+xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
