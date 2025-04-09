@@ -73,7 +73,7 @@ explainer = LLMExplanationGenerator(api_key=api_key)
 
 # Generate and save explanations (returns both explanations and file paths)
 explanations, saved_files = explainer.generate_and_save_explanations(
-    exps=exps,
+    exps=exp_scores,
     output_format="both"  # or "json"/"html"
 )
 
