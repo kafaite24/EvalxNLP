@@ -1,3 +1,6 @@
+# 
+
+
 import json
 from pathlib import Path
 from IPython.display import display, HTML
@@ -8,6 +11,16 @@ class LLMExplanationGenerator:
         """
         Initialize with API key and model name, plus output directory setup.
         """
+        self.explainer_names = {
+            'DL': 'DeepLift',
+            'IG': 'Integrated Gradients',
+            'GBP': 'Guided Backprop',
+            'SHAP': 'SHAP',
+            'LIME': 'LIME',
+            'SHAP-I': 'SHAP-I',
+            'GxI': 'Gradient×Input',
+            'Saliency': 'Saliency'
+        }
         self.model_name = model_name
         self.api_key = api_key
         self.client = Together(api_key=self.api_key)
@@ -56,12 +69,12 @@ class LLMExplanationGenerator:
 
     def _save_to_html(self, explanations, filepath):
         """Generate human-readable HTML report."""
-        # First generate all the explanation divs
         explanation_divs = []
         for exp in explanations:
+            full_name = self.explainer_names.get(exp['method'], exp['method'])
             div = f"""
             <div class="explanation">
-                <h3>{exp['method'].upper()}</h3>
+                <h3>{full_name}</h3>  <!-- Changed from exp['method'].upper() -->
                 <span style='color:black'> Sentence: {exp['text']} </span><br>
                 <span style='color:black'> Model Label: {exp['target']} </span>
                 <pre>{exp['explanation'].replace('Interpretation of Saliency Scores', '')}</pre>
@@ -106,10 +119,10 @@ class LLMExplanationGenerator:
     def display_explanations(self, explanations):
         """Display explanations in notebook with formatting."""
         for exp in explanations:
+            full_name = self.explainer_names.get(exp['method'], exp['method'])
             clean_explanation = exp['explanation'].replace('Interpretation of Saliency Scores', '')
             display(HTML(f"""
             <div style='
-                # background: #f5f5f5;
                 padding: 12px;
                 margin: 12px 0;
                 border-radius: 4px;
@@ -117,7 +130,7 @@ class LLMExplanationGenerator:
                 color:white;
             '>
                 <h4 style='margin-top:0;color:white;'>
-                    {exp['method'].upper()} <span style='color:white'></span>
+                    {full_name} <span style='color:white'></span>  <!-- Changed from exp['method'].upper() -->
                 </h4>
                 <span style='color:white'> Sentence: {exp['text']} </span><br>
                 <span style='color:white'> Model Label: {exp['target']} </span>
@@ -185,18 +198,20 @@ class LLMExplanationGenerator:
         """
         Create a prompt that explicitly requests method-specific explanations.
         """
+        full_name = self.explainer_names.get(exp.explainer, exp.explainer)
+        print(f"Generating explanation for {full_name}...")
         prompt = f"""
-        You are analyzing {exp.explainer} explanations for a text classification model.
+        You are analyzing {full_name} explanations for a text classification model.
         The target class is '{exp.target}'.
         
-        Given these token importance scores from {exp.explainer}, explain:
+        Given these token importance scores from {full_name}, explain:
         1. How are these scores calculated?
-        2. How to interpret them to with respect to model's dccision?
+        2. How to interpret them with respect to the model's decision?
 
         Tokens: {exp.tokens}
         Scores: {exp.scores}
 
-        Provide concise explanation specifically for {exp.explainer} method:
+        Provide concise explanation specifically for {full_name} method:
         """
         return prompt
 
