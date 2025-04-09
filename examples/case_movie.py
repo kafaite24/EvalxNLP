@@ -16,9 +16,14 @@ from LLMExplanationGenerator import LLMExplanationGenerator
 from EvaluationMetricsExplainer import EvaluationMetricsExplainer
 
 
-if 'SLURM_JOB_ID' not in os.environ:
-    print(f"bypassing")
-    os.environ['BYPASS_SLURM_CHECK'] = '1'  # Add this bypass flag
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--test-mode', action='store_true')
+args = parser.parse_args()
+
+if not args.test_mode and 'SLURM_JOB_ID' not in os.environ:
+    print("Use --test-mode for local runs")
+    exit(1)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
