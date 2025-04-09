@@ -40,47 +40,31 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[g,gb,dl,ixg], evaluators=[sc,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[g,gb,dl,ixg], evaluators=[cx], device=device)
 
-dataset_args_ = LoadDatasetArgs(
-    dataset_name="eraser-benchmark/movie_rationales",
-    text_field="review",
-    label_field="label",
-    rationale_field="evidences",
-    dataset_split="test",
-)
+# dataset_args_ = LoadDatasetArgs(
+#     dataset_name="eraser-benchmark/movie_rationales",
+#     text_field="review",
+#     label_field="label",
+#     rationale_field="evidences",
+#     dataset_split="test",
+# )
 
-# Load the dataset fields
-results = load_fields_from_dataset(dataset_args_)
-input_texts= results['text']
-labels= results['labels']
-rationales= results['rationales']
+# # Load the dataset fields
+# results = load_fields_from_dataset(dataset_args_)
+# input_texts= results['text']
+# labels= results['labels']
+# rationales= results['rationales']
 
-mv= MovieRationalesProcessor(tokenizer)
-processed_rationales= mv.process_dataset(input_texts, labels, rationales)
+# mv= MovieRationalesProcessor(tokenizer)
+# processed_rationales= mv.process_dataset(input_texts, labels, rationales)
 
-#Select a sub-sample if you want
-input_texts_sample=input_texts[:2]
-labels_sample=labels[:2]
-rationale_sample= processed_rationales[:2]
+# #Select a sub-sample if you want
+# input_texts_sample=input_texts[:2]
+# labels_sample=labels[:2]
+# rationale_sample= processed_rationales[:2]
 
-exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
+# exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
 
-api_key = "9b305c0291728a7f4ca861254b9bedd3e7785d5360100d93603dd1758931be6d"
-explainer = LLMExplanationGenerator(api_key=api_key)
-
-# Generate and save explanations (returns both explanations and file paths)
-explanations, saved_files = explainer.generate_and_save_explanations(exps=exp_scores, output_format="both")
-
-# Print saved locations
-print(f"Saved files: {[str(p) for p in saved_files]}")
-
-metrics= xai_framework.compute_evaluation_metrics(exp_scores)
-xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
-
-explainer = EvaluationMetricsExplainer(api_key=api_key)
-
-results = explainer.explain_results(metrics)
-json_path, html_path = explainer.save_results(results)
-
-# xai_framework.benchmark_dataset(input_texts_sample, labels_sample,rationales=rationale_sample, save_metrics_path="../results/movie_rationales.xlsx")
+# metrics= xai_framework.compute_evaluation_metrics(exp_scores)
+# xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
