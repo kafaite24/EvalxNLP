@@ -15,22 +15,14 @@ from dataset_loaders.hatexplain import HateSpeechProcessor
 from LLMExplanationGenerator import LLMExplanationGenerator
 from EvaluationMetricsExplainer import EvaluationMetricsExplainer
 
-
-# import argparse
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--test-mode', action='store_true')
-# args = parser.parse_args()
-
-# if not args.test_mode and 'SLURM_JOB_ID' not in os.environ:
-#     print("Use --test-mode for local runs")
-#     exit(1)
-
-print("heree")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
+
+
+api_key = "9b305c0291728a7f4ca861254b9bedd3e7785d5360100d93603dd1758931be6d"
 
 ig= IntegratedGradientsExplainer(model,tokenizer,device=device)
 gb= GuidedBackpropExplainer(model,tokenizer,device=device)
@@ -77,5 +69,26 @@ rationale_sample= processed_rationales[:2]
 
 exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
 
+explainer = LLMExplanationGenerator(api_key=api_key)
+
+# Generate and save explanations (returns both explanations and file paths)
+explanations, saved_files = explainer.generate_and_save_explanations(
+    exps=exps,
+    output_format="both"  # or "json"/"html"
+)
+
+# Display in notebook
+explainer.display_explanations(explanations)
+
+# Print saved locations
+print(f"Saved files: {[str(p) for p in saved_files]}")
+
 metrics= xai_framework.compute_evaluation_metrics(exp_scores)
 xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
+
+explainer = EvaluationMetricsExplainer(api_key=api_key)
+
+results = explainer.explain_results(metrics)
+json_path, html_path = explainer.save_results(results)
+
+explainer.display_results(results)
