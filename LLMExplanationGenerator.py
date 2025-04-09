@@ -103,46 +103,6 @@ class LLMExplanationGenerator:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-    # def _save_to_html(self, explanations, filepath):
-    #     """Generate human-readable HTML report."""
-    #     html_content = f"""
-    #     <!DOCTYPE html>
-    #     <html>
-    #     <head>
-    #         <title>Model Explanations Report</title>
-    #         <style>
-    #             body {{ font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }}
-    #             .explanation {{ 
-    #                 background: #f8f9fa;
-    #                 border-left: 4px solid #4e79a7;
-    #                 padding: 15px;
-    #                 margin-bottom: 20px;
-    #                 border-radius: 4px;
-    #             }}
-    #             h3 {{ color: #2c3e50; margin-top: 0; }}
-    #             .meta {{ color: #7f8c8d; font-size: 0.9em; }}
-    #             pre {{ white-space: pre-wrap; }}
-    #         </style>
-    #     </head>
-    #     <body>
-    #         <h1>Model Explanations Report</h1>
-    #         <div class="meta">
-    #             Model: {self.model_name}<br>
-    #         </div>
-    #         <hr>
-    #         {"".join([f"""
-    #             <div class="explanation">
-    #                 <h3>{exp['method'].upper()} (Target: {exp['target']})</h3>
-    #                 <pre>{exp['explanation'].replace('Interpretation of Saliency Scores', '')}</pre>
-    #             </div>
-    #             """ for exp in explanations])}
-    #     </body>
-    #     </html>
-    #     """
-        
-    #     with open(filepath, 'w', encoding='utf-8') as f:
-    #         f.write(html_content)
-
     def display_explanations(self, explanations):
         """Display explanations in notebook with formatting."""
         for exp in explanations:
@@ -220,24 +180,6 @@ class LLMExplanationGenerator:
                     continue
         
         return explanations
-        # for exp in exps:
-        #     print(exp)
-        #     prompt = self._create_prompt(exp)
-        #     response = self.client.chat.completions.create(
-        #         model=self.model_name,
-        #         messages=[{"role": "user", "content": prompt}],
-        #         max_tokens=500,
-        #         temperature=0.7,
-        #     )
-            
-        #     explanation = response.choices[0].message.content.strip()
-        #     explanations.append({
-        #         "method": exp.explainer,
-        #         "explanation": explanation,
-        #         "target": exp.target
-        #     })
-        
-        # return explanations
 
     def _create_prompt(self, exp):
         """

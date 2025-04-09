@@ -43,7 +43,7 @@ iou_f1= IOUF1Evaluator(model,tokenizer,device=device)
 token_f1= TokenF1Evaluator(model,tokenizer,device=device)
 auprc= AUPRCEvaluator(model,tokenizer,device=device)
 
-xai_framework = XAIFramework(model, tokenizer,explainers=[g,gb,dl,ixg], evaluators=[cx], device=device)
+xai_framework = XAIFramework(model, tokenizer,explainers=[g,gb,dl,ixg,lime,shap,shapiq,ig], evaluators=[sc,ss,fad,sp,cx,auctp,iou_f1,token_f1,auprc], device=device)
 
 dataset_args_ = LoadDatasetArgs(
     dataset_name="eraser-benchmark/movie_rationales",
@@ -69,16 +69,13 @@ rationale_sample= processed_rationales[:2]
 
 exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
 
-explainer = LLMExplanationGenerator(api_key=api_key)
+scores_explainer = LLMExplanationGenerator(api_key=api_key)
 
 # Generate and save explanations (returns both explanations and file paths)
-explanations, saved_files = explainer.generate_and_save_explanations(
+explanations, saved_files = scores_explainer.generate_and_save_explanations(
     exps=exp_scores,
     output_format="both"  # or "json"/"html"
 )
-
-# Display in notebook
-explainer.display_explanations(explanations)
 
 # Print saved locations
 print(f"Saved files: {[str(p) for p in saved_files]}")
@@ -86,9 +83,7 @@ print(f"Saved files: {[str(p) for p in saved_files]}")
 metrics= xai_framework.compute_evaluation_metrics(exp_scores)
 xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
 
-explainer = EvaluationMetricsExplainer(api_key=api_key)
+metrics_explainer = EvaluationMetricsExplainer(api_key=api_key)
 
-results = explainer.explain_results(metrics)
-json_path, html_path = explainer.save_results(results)
-
-explainer.display_results(results)
+results = metrics_explainer.explain_results(metrics)
+json_path, html_path = metrics_explainer.save_results(results)
