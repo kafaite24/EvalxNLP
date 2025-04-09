@@ -10,7 +10,16 @@ class EvaluationMetricsExplainer:
         self.model_name = model_name
         self.api_key = api_key
         self.client = Together(api_key=self.api_key)
-        
+        self.explainer_names = {
+            'DL': 'DeepLift',
+            'IG': 'Integrated Gradients',
+            'GBP': 'Guided Backprop',
+            'SHAP': 'SHAP',
+            'LIME': 'LIME',
+            'SHAP-I': 'SHAP-I',
+            'GxI': 'Gradient×Input',
+            'Saliency': 'Saliency'
+        }
         self.metric_info = {
             'Soft Comprehensiveness ↑': {
                 'description': "Measures how much the model's prediction relies on important tokens by probabilistically perturbing them based on importance scores.",
@@ -131,11 +140,12 @@ class EvaluationMetricsExplainer:
 
     def _create_metric_prompt(self, metric, explainer, value, info):
         """Create prompt for metric explanation"""
+        full_name = self.explainer_names.get(explainer, explainer)
         return f"""
         We're evaluating explanation methods using the {metric} metric.
         Context: {info['description']} (Direction: {info['direction']}, Range: {info['range']})
         
-        The {explainer} method scored {value:.3f}. In 2-3 sentences:
+        The {full_name} method scored {value:.3f}. In 2-3 sentences:
         1. Explain what this score means
         2. Assess if this indicates good performance
         3. Compare to ideal values
@@ -268,10 +278,11 @@ class EvaluationMetricsExplainer:
             """
             
             for explainer, details in data['explanations'].items():
+                full_name = self.explainer_names.get(explainer.lower(), explainer)
                 html_content += f"""
                 <div class="explainer">
-                    <div class="explainer-name">{explainer}</div>
-                    <div><strong>Score:</strong> {details['value']:.3f}</div>
+                    <div class="explainer-name">{full_name}</div>
+                    <div><strong>Score:</strong> <span class="score">{details['value']:.3f}</span></div>
                     <div class="interpretation"><strong>Analysis:</strong> {details['interpretation']}</div>
                 </div>
                 """
@@ -284,6 +295,7 @@ class EvaluationMetricsExplainer:
             f.write(html_content)
 
     def display_results(self, explanations):
+        
         """Display with complete style isolation"""
         from IPython.display import display, HTML
         import base64
