@@ -51,7 +51,7 @@ class LLMExplanationGenerator:
             html_path = self.output_dir / "explanations.html"
             self._save_to_html(explanations, html_path)
             saved_files.append(html_path)
-            print(f"file saved in {html_path}")
+            print(f"LLM generated textual explanations for importance scores saved in {html_path} and {json_path}")
         return explanations, saved_files
 
     def _save_to_json(self, explanations, filepath):

@@ -17,12 +17,11 @@ from EvaluationMetricsExplainer import EvaluationMetricsExplainer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+api_key = "9b305c0291728a7f4ca861254b9bedd3e7785d5360100d93603dd1758931be6d"
+
 model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
-
-
-api_key = "9b305c0291728a7f4ca861254b9bedd3e7785d5360100d93603dd1758931be6d"
 
 ig= IntegratedGradientsExplainer(model,tokenizer,device=device)
 gb= GuidedBackpropExplainer(model,tokenizer,device=device)
@@ -67,7 +66,7 @@ input_texts_sample=input_texts[:2]
 labels_sample=labels[:2]
 rationale_sample= processed_rationales[:2]
 
-exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/score.json")
+exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/moviereviews_score.json")
 
 scores_explainer = LLMExplanationGenerator(api_key=api_key)
 
@@ -76,9 +75,6 @@ explanations, saved_files = scores_explainer.generate_and_save_explanations(
     exps=exp_scores,
     output_format="both"  # or "json"/"html"
 )
-
-# Print saved locations
-print(f"Saved files: {[str(p) for p in saved_files]}")
 
 metrics= xai_framework.compute_evaluation_metrics(exp_scores)
 xai_framework.create_pivot_table(metrics,save_path="../results/metrics/rationales.xlsx")
