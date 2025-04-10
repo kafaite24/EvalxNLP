@@ -269,10 +269,20 @@ xai_framework = XAIFramework(model, tokenizer,explainers=[ig], evaluators=[sc], 
 
 ## Tutorials
 
-Further tutorials are available that demonstrate usage of the library for different usecases. Please see notebooks in the examples folder which include:
+Further tutorials are available that demonstrate usage of the library for different usecases. 
+
+Please see notebooks in the examples folder which include:
 
 |📚 Notebook |Tutorials |
 |--------|-------|
 | [Sentiment Analysis example](./examples/tutorial_sentiment_analysis.ipynb) |	Benchmarking movie reviews |
 | [Hate Speech Detection example](./examples/tutorial_hate_speech_detection.ipynb)	| Evaluating sensitive content |
 | [Natural Language Inference example](./examples/tutorial_nli.ipynb) | Analyzing premise-hypothesis relationships |
+
+You can also find sample Python scripts in the examples folder that demonstrate how to run the framework for different usecases on various datasets:
+
+|📚 Dataset | File |
+|--------|-------|
+| [Movie Reviews](https://huggingface.co/datasets/eraser-benchmark/movie_rationales) |	[Sentiment Analysis example](./examples/case_movie.py) |
+| [HateXplain](https://huggingface.co/datasets/Hate-speech-CNERG/hatexplain) | [Hate Speech Detection example](./examples/tutorial_hate_speech_detection.ipynb) |
+
