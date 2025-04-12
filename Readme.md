@@ -16,6 +16,7 @@ A comprehensive toolbox for benchmarking explainability techniques in NLP, featu
 - Natural language interpretation via LLMs
 - Interactive visualization
 
+For detailed documentation, refer to: https://kafaite24.github.io/EvalxNLP_docs/
 ## Table of Contents
 - [Key Features](#key-features)
 - [Installation](#installation)
