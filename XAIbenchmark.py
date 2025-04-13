@@ -343,7 +343,7 @@ class XAIFramework:
              # Use encoding='utf-8' explicitly
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(serializable_explanations, f, indent=2, ensure_ascii=False)
-            print(f"Saved explanations to {file_path}")
+            print(f"Saved importance scores to {file_path}")
         except Exception as e:
             print(f"Error saving explanations: {e}")
 
