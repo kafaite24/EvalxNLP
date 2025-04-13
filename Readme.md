@@ -280,7 +280,7 @@ Please see notebooks in the examples folder which include:
 | [Hate Speech Detection example](./examples/tutorial_hate_speech_detection.ipynb)	| Evaluating sensitive content |
 | [Natural Language Inference example](./examples/tutorial_nli.ipynb) | Analyzing premise-hypothesis relationships |
 
-You can also find sample Python scripts in the examples folder that demonstrate how to run the framework for different usecases on various datasets:
+You can also find sample Python scripts in the examples folder that demonstrate complete pipeline of how to run the framework for different usecases on various datasets:
 
 |📚 Dataset | File |
 |--------|-------|
