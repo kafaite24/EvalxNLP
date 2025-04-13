@@ -231,7 +231,7 @@ class LLMExplanationGenerator:
         """
         # Get the full name of the explanation method
         full_name = self.explainer_names.get(exp.explainer, exp.explainer)
-        print(f"Generating explanation for {full_name}...")
+        print(f"Generating LLM generated textual explanation for {full_name} scores...")
         # Construct the prompt with method-specific details
         prompt = f"""
         You are analyzing {full_name} explanations for a text classification model.

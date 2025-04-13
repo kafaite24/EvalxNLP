@@ -362,7 +362,7 @@ class XAIFramework:
                         print(f"Found cached explanation for {explainer.NAME}")
                         all_results[explainer.NAME] = cache[cache_key]
                     else:
-                        print(f"Computing explanation for {explainer.NAME}")
+                        print(f"Computing importance scores for {explainer.NAME}")
                         try:
                             explanation = explainer.compute_feature_importance(text, target=target_label)
                             explanation = lp_normalize([explanation])
@@ -395,7 +395,7 @@ class XAIFramework:
             explanation_outputs = lp_normalize(explanation_outputs)
             return explanation_outputs
         except Exception as e:
-            print(f"Error generating explanations: {e}")
+            print(f"Error generating explanation scores: {e}")
             return pd.DataFrame()
 
     def visualize(self, explanations: List[Explanation], skip_boundary_tokens: bool = True, visualization_style: Optional[str] = "cool_warm") -> pd.DataFrame:

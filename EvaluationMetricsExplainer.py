@@ -110,6 +110,7 @@ class EvaluationMetricsExplainer:
         
         # Group results by metric and generate explanations
         for metric, group in valid_results.groupby('Metric'):
+            print(f"Generating LLM textual explanation for metric: {metric}")
             if metric not in self.metric_info:
                 continue  # Skip unknown metrics
                 
