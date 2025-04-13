@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -18,6 +17,7 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
             max_len (int): Maximum token length to which the input should be padded/truncated.
             device (str): Device to run computations on (e.g., "cuda:0" or "cpu").
         """
+        # Store model, tokenizer, and configuration parameters
         self.model = model
         self.tokenizer = tokenizer
         self.max_len = max_len
@@ -40,14 +40,14 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         importance_scores = importance_scores.unsqueeze(-1).to(self._device)
         attention_mask = attention_mask.unsqueeze(-1).float().to(self._device)
 
-        # Normalize importance scores
+        # Normalize importance scores to the range [0, 1]
         normalized_importance_scores = (importance_scores - importance_scores.min()) / (importance_scores.max() - importance_scores.min())
         
-        # Create a Bernoulli mask based on importance scores
+        # Create a Bernoulli mask based on normalized importance scores
         mask = torch.bernoulli(normalized_importance_scores)
-        mask = mask * attention_mask  # Apply the attention mask
+        mask = mask * attention_mask  # Apply the attention mask to exclude padding tokens
         
-        # Apply the mask to the embeddings
+        # Apply the mask to the embeddings to perturb them
         perturbed_embeddings = embeddings * mask
         return perturbed_embeddings
 
@@ -62,6 +62,7 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         Returns:
             np.array: Sufficiency scores.
         """
+        # Calculate sufficiency as the reduction in prediction confidence
         sufficiency = 1 - np.maximum(0, full_text_probs - reduced_probs)
         return sufficiency
 
@@ -80,21 +81,23 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         # Get model prediction on original input
         original_output = self.model(**original_input)
         original_prediction = F.softmax(original_output.logits, dim=-1).detach().cpu().numpy()
-        full_text_probs = original_prediction.max(-1)
-        full_text_class = original_prediction.argmax(-1)
-        rows = np.arange(original_input["input_ids"].size(0))
+        full_text_probs = original_prediction.max(-1)  # Maximum probability for each instance
+        full_text_class = original_prediction.argmax(-1)  # Predicted class for each instance
+        rows = np.arange(original_input["input_ids"].size(0))  # Batch indices
 
         if calculate_baseline:
+            # Create baseline input by zeroing out all tokens
             baseline_input = original_input.copy()
             baseline_input['input_ids'] = torch.zeros_like(original_input['input_ids']).long().to(self._device)
             batch = baseline_input
         else:
+            # Use the perturbed input for sufficiency computation
             batch = perturbed_input
 
         # Get model prediction on perturbed or baseline input
         yhat = self.model(**batch)
         yhat_probs = F.softmax(yhat.logits, dim=-1).detach().cpu().numpy()
-        reduced_probs = yhat_probs[rows, full_text_class]
+        reduced_probs = yhat_probs[rows, full_text_class]  # Probability of the original class
 
         # Compute sufficiency for perturbed input
         sufficiency = self.sufficiency_(full_text_probs, reduced_probs)
@@ -111,9 +114,12 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         Returns:
             float: The normalized sufficiency score.
         """
-        baseline_sufficiency -= 1e-4  # Avoid division by zero
+        # Adjust baseline sufficiency slightly to avoid division by zero
+        baseline_sufficiency -= 1e-4
+        # Normalize sufficiency using the baseline
         normalized_suff = np.maximum(0, (sufficiency - baseline_sufficiency) / (1 - baseline_sufficiency))
-        normalized_suff = np.clip(normalized_suff, 0, 1)  # Ensure it is between 0 and 1
+        # Clip the normalized score to ensure it is within [0, 1]
+        normalized_suff = np.clip(normalized_suff, 0, 1)
         return normalized_suff
 
     def compute_single_instance(self, explanation):
@@ -128,6 +134,7 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         """
         original_sentences = explanation.text
 
+        # Convert importance scores to a tensor and move to the correct device
         importance_scores = torch.tensor(explanation.scores).to(self._device)
 
         # Tokenize the sentences
@@ -140,12 +147,12 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         # Get embeddings (using the model's outputs)
         with torch.no_grad():
             outputs = self.model(**original_input, output_hidden_states=True)
-            original_embeddings = outputs.hidden_states[-1]
+            original_embeddings = outputs.hidden_states[-1]  # Use the last hidden state as embeddings
 
         # Apply soft perturbation based on importance scores
         perturbed_embeddings = self.soft_perturb(original_embeddings, importance_scores, original_input['attention_mask'])
         perturbed_input = original_input.copy()
-        perturbed_input['input_ids'] = perturbed_embeddings.argmax(dim=-1)
+        perturbed_input['input_ids'] = perturbed_embeddings.argmax(dim=-1)  # Convert embeddings back to token IDs
 
         # Compute the sufficiency score based on the perturbed input
         baseline_sufficiency = self.compute_sufficiency(original_input, perturbed_input, calculate_baseline=True)
@@ -165,10 +172,12 @@ class SoftSufficiencyEvaluator(BaseEvaluator):
         Returns:
             float: The cumulative sufficiency score (average of all normalized sufficiency scores).
         """
+        # Ensure explanations is a list
         explanations = explanations if isinstance(explanations, list) else [explanations]
 
         all_normalized_sufficiency = []
         for explanation in explanations:
+            # Compute normalized sufficiency for each instance
             normalized_sufficiency = self.compute_single_instance(explanation)
             all_normalized_sufficiency.extend(normalized_sufficiency)
 

@@ -28,7 +28,7 @@ class ComplexityEvaluator(BaseEvaluator):
         self.model = model
         self.tokenizer = tokenizer
         self._device = device
-        self.requires_human_rationale = False
+        self.requires_human_rationale = False  # Indicates if human rationale is required for evaluation
 
     def _total_contribution(self, attributions: torch.Tensor) -> torch.Tensor:
         """
@@ -40,6 +40,7 @@ class ComplexityEvaluator(BaseEvaluator):
         Returns:
             torch.Tensor: Total contribution for each instance (batch_size,).
         """
+        # Sum of absolute values of attributions across all tokens
         return torch.sum(torch.abs(attributions), dim=1)
 
     def _fractional_contribution(
@@ -55,7 +56,9 @@ class ComplexityEvaluator(BaseEvaluator):
         Returns:
             torch.Tensor: Fractional contribution of the feature (batch_size,).
         """
+        # Compute total contribution for normalization
         total_contrib = self._total_contribution(attributions)
+        # Fractional contribution of the specific feature
         return torch.abs(attributions[:, feature_index]) / (total_contrib + 1e-8)
 
     def compute_complexity(self, attributions: torch.Tensor) -> torch.Tensor:
@@ -68,18 +71,22 @@ class ComplexityEvaluator(BaseEvaluator):
         Returns:
             torch.Tensor: Complexity score for the batch.
         """
-        # Ensure attributions are 2D
+        # Ensure attributions are 2D for consistent processing
         if attributions.ndim == 1:
             attributions = attributions.unsqueeze(0)  # Reshape to (1, seq_len)
 
         batch_size, seq_len = attributions.shape
-        complexity = torch.zeros(batch_size, device=self._device)
+        complexity = torch.zeros(batch_size, device=self._device)  # Initialize complexity scores
 
+        # Iterate over each feature (token) to compute entropy
         for feature_index in range(seq_len):
             frac_contrib = self._fractional_contribution(attributions, feature_index)
+            # Accumulate entropy for each feature
             complexity += -frac_contrib * torch.log(frac_contrib + 1e-8)
 
+        # Normalize complexity by sequence length
         complexity = complexity / seq_len
+        # Return the mean complexity across the batch
         return torch.mean(complexity)
 
     def evaluate(self, explanations, split_type="test"):
@@ -95,13 +102,14 @@ class ComplexityEvaluator(BaseEvaluator):
         """
         results = []
         for idx, exp in enumerate(explanations):
-            text = exp.text
-            attributions = torch.tensor(exp.scores, device=self._device)
+            text = exp.text  # Extract the text for the current instance
+            attributions = torch.tensor(exp.scores, device=self._device)  # Convert saliency scores to tensor
 
             # Compute complexity for the current instance
             complexity_score = self.compute_complexity(attributions).item()  # Convert to Python float
             results.append({"Instance": idx, "Text": text, "Complexity": complexity_score})
 
+        # Return results as a DataFrame
         return pd.DataFrame(results)
 
     def compute(self, explanations):
@@ -114,6 +122,7 @@ class ComplexityEvaluator(BaseEvaluator):
         Returns:
             float: The average complexity score across the dataset.
         """
+        # Ensure explanations are in list format
         explanations = explanations if isinstance(explanations, list) else [explanations]
         # Perform the evaluation
         results_df = self.evaluate(explanations, split_type="test")

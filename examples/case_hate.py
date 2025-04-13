@@ -12,6 +12,8 @@ from evaluators import AUCTPEvaluator, SoftComprehensivenessEvaluator, SoftSuffi
 from dataset_loaders.dataset_loader import LoadDatasetArgs,load_fields_from_dataset
 from dataset_loaders.movie_rationales import MovieRationalesProcessor
 from dataset_loaders.hatexplain import HateSpeechProcessor
+from LLMExplanationGenerator import LLMExplanationGenerator
+from EvaluationMetricsExplainer import EvaluationMetricsExplainer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 

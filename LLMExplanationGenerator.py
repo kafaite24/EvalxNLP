@@ -6,8 +6,9 @@ from together import Together
 class LLMExplanationGenerator:
     def __init__(self, api_key, model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
         """
-        Initialize with API key and model name, plus output directory setup.
+        Initialize the explanation generator with API key, model name, and output directory setup.
         """
+        # Mapping of explanation methods to their full names
         self.explainer_names = {
             'DL': 'DeepLift',
             'IG': 'Integrated Gradients',
@@ -18,32 +19,32 @@ class LLMExplanationGenerator:
             'GxI': 'Gradient×Input',
             'Saliency': 'Saliency'
         }
-        self.model_name = model_name
-        self.api_key = api_key
-        self.client = Together(api_key=self.api_key)
-        self.output_dir = Path("../results/llm_explanations")
-        self.output_dir.mkdir(exist_ok=True)
+        self.model_name = model_name  # Name of the model to use for generating explanations
+        self.api_key = api_key  # API key for authentication
+        self.client = Together(api_key=self.api_key)  # Client for interacting with the Together API
+        self.output_dir = Path("../results/llm_explanations")  # Directory to save output files
+        self.output_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
     def generate_and_save_explanations(self, exps, output_format="both"):
         """
-        Generate explanations and save to file(s) with display options.
+        Generate explanations for the given inputs and save them in the specified format(s).
         
         Args:
-            exps: List of explanation objects
-            output_format: "json", "html", or "both" (default)
+            exps: List or dictionary of explanation objects.
+            output_format: Format to save the explanations ("json", "html", or "both").
             
         Returns:
-            Tuple: (list of explanations, path to saved files)
+            Tuple: List of generated explanations and paths to saved files.
         """
-        explanations = self.generate_explanation(exps)
-        
+        explanations = self.generate_explanation(exps)  # Generate explanations
         saved_files = []
-        
-        # JSON output (always created for programmatic use)
+
+        # Save explanations in JSON format for programmatic use
         json_path = self.output_dir / "explanations.json"
         self._save_to_json(explanations, json_path)
         saved_files.append(json_path)
-        
+
+        # Optionally save explanations in HTML format for human-readable reports
         if output_format in ("html", "both"):
             html_path = self.output_dir / "explanations.html"
             self._save_to_html(explanations, html_path)
@@ -52,26 +53,40 @@ class LLMExplanationGenerator:
         return explanations, saved_files
 
     def _save_to_json(self, explanations, filepath):
-        """Save explanations to JSON with metadata."""
+        """
+        Save the generated explanations to a JSON file with metadata.
+        
+        Args:
+            explanations: List of explanation objects.
+            filepath: Path to save the JSON file.
+        """
         output_data = {
             "metadata": {
-                "model": self.model_name,
-                "num_explanations": len(explanations)
+                "model": self.model_name,  # Include model name in metadata
+                "num_explanations": len(explanations)  # Number of explanations generated
             },
-            "explanations": explanations
+            "explanations": explanations  # Actual explanations
         }
-        
+        # Write the data to a JSON file
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, indent=2, ensure_ascii=False)
 
     def _save_to_html(self, explanations, filepath):
-        """Generate human-readable HTML report."""
+        """
+        Save the generated explanations to an HTML file for easy visualization.
+        
+        Args:
+            explanations: List of explanation objects.
+            filepath: Path to save the HTML file.
+        """
         explanation_divs = []
         for exp in explanations:
+            # Get the full name of the explanation method
             full_name = self.explainer_names.get(exp['method'], exp['method'])
+            # Create a styled HTML block for each explanation
             div = f"""
             <div class="explanation">
-                <h3>{full_name}</h3>  <!-- Changed from exp['method'].upper() -->
+                <h3>{full_name}</h3>
                 <span style='color:black'> Sentence: {exp['text']} </span><br>
                 <span style='color:black'> Model Label: {exp['target']} </span>
                 <pre>{exp['explanation'].replace('Interpretation of Saliency Scores', '')}</pre>
@@ -79,7 +94,7 @@ class LLMExplanationGenerator:
             """
             explanation_divs.append(div)
         
-        # Then build the full HTML
+        # Combine all explanation blocks into a complete HTML document
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -109,15 +124,23 @@ class LLMExplanationGenerator:
         </body>
         </html>
         """
-        
+        # Write the HTML content to a file
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html_content)
-        
+
     def display_explanations(self, explanations):
-        """Display explanations in notebook with formatting."""
+        """
+        Display the generated explanations in a Jupyter notebook with formatting.
+        
+        Args:
+            explanations: List of explanation objects.
+        """
         for exp in explanations:
+            # Get the full name of the explanation method
             full_name = self.explainer_names.get(exp['method'], exp['method'])
+            # Clean up the explanation text
             clean_explanation = exp['explanation'].replace('Interpretation of Saliency Scores', '')
+            # Display the explanation as an HTML block
             display(HTML(f"""
             <div style='
                 padding: 12px;
@@ -127,34 +150,39 @@ class LLMExplanationGenerator:
                 color:white;
             '>
                 <h4 style='margin-top:0;color:white;'>
-                    {full_name} <span style='color:white'></span>  <!-- Changed from exp['method'].upper() -->
+                    {full_name} <span style='color:white'></span>
                 </h4>
                 <span style='color:white'> Sentence: {exp['text']} </span><br>
                 <span style='color:white'> Model Label: {exp['target']} </span>
                 <pre style='white-space:pre-wrap;margin-bottom:0;'>{clean_explanation}</pre>
             </div>
             """))
-   
+
     def generate_explanation(self, exps):
         """
-        Generate textual explanations for a list of explanations (exps), with explicit method attribution.
+        Generate textual explanations for a list or dictionary of explanation objects.
+        
+        Args:
+            exps: List or dictionary of explanation objects.
+            
+        Returns:
+            List of generated explanations with method, explanation text, target, and input text.
         """
         explanations = []
 
-         # Handle case where exps is a dictionary of {method: [explanation_objects]}
+        # Handle case where exps is a dictionary of {method: [explanation_objects]}
         if isinstance(exps, dict):
             for method, exp_list in exps.items():
-                # exp_list = exp_list if isinstance(exp_list, list) else [exp_list]
                 for exp in exp_list:
-                    prompt = self._create_prompt(exp)
+                    prompt = self._create_prompt(exp)  # Create a method-specific prompt
                     try:
+                        # Generate explanation using the LLM
                         response = self.client.chat.completions.create(
                             model=self.model_name,
                             messages=[{"role": "user", "content": prompt}],
                             max_tokens=500,
                             temperature=0.7,
                         )
-                        
                         explanation = response.choices[0].message.content.strip()
                         explanations.append({
                             "method": method,  # Use the dictionary key as method
@@ -163,21 +191,21 @@ class LLMExplanationGenerator:
                             "text": exp.text
                         })
                     except Exception as e:
-                        print(e)
+                        print(e)  # Log any errors during explanation generation
                         continue
         # Handle case where exps is a single explanation or list
         else:
             exp_list = [exps] if not isinstance(exps, list) else exps
             for exp in exp_list:
-                prompt = self._create_prompt(exp)
+                prompt = self._create_prompt(exp)  # Create a method-specific prompt
                 try:
+                    # Generate explanation using the LLM
                     response = self.client.chat.completions.create(
                         model=self.model_name,
                         messages=[{"role": "user", "content": prompt}],
                         max_tokens=500,
                         temperature=0.7,
                     )
-                    
                     explanation = response.choices[0].message.content.strip()
                     explanations.append({
                         "method": exp.explainer,  # Use the explainer attribute
@@ -186,17 +214,25 @@ class LLMExplanationGenerator:
                         "text": exp.text
                     })
                 except Exception as e:
-                    print(e)
+                    print(e)  # Log any errors during explanation generation
                     continue
         
         return explanations
 
     def _create_prompt(self, exp):
         """
-        Create a prompt that explicitly requests method-specific explanations.
+        Create a prompt for generating method-specific explanations.
+        
+        Args:
+            exp: Explanation object containing tokens, scores, and other attributes.
+            
+        Returns:
+            String prompt for the LLM.
         """
+        # Get the full name of the explanation method
         full_name = self.explainer_names.get(exp.explainer, exp.explainer)
         print(f"Generating explanation for {full_name}...")
+        # Construct the prompt with method-specific details
         prompt = f"""
         You are analyzing {full_name} explanations for a text classification model.
         The target class is '{exp.target}'.
@@ -212,4 +248,3 @@ class LLMExplanationGenerator:
         """
         return prompt
 
-    

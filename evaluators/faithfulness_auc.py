@@ -8,7 +8,7 @@ from .baseevaluator import BaseEvaluator
 class AUCTPEvaluator((BaseEvaluator)):
     NAME = "AUTPC ↓"
 
-    def __init__(self, model, tokenizer,device="cpu", batch_size=32):
+    def __init__(self, model, tokenizer, device="cpu", batch_size=32):
         """
         Initializes the FaithfulnessEvaluator.
 
@@ -18,11 +18,12 @@ class AUCTPEvaluator((BaseEvaluator)):
             batch_size (int): Batch size for processing.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
+        # Store model, tokenizer, and other configurations
         self.model = model
         self.tokenizer = tokenizer
         self.batch_size = batch_size
         self._device = device
-        self.requires_human_rationale = False
+        self.requires_human_rationale = False  # Indicates if human rationale is required for evaluation
 
     @staticmethod
     def mask_tokens(tokens, importance_scores, threshold):
@@ -37,8 +38,11 @@ class AUCTPEvaluator((BaseEvaluator)):
         Returns:
             list: Masked tokens.
         """
+        # Calculate the number of tokens to mask based on the threshold
         n_tokens_to_mask = int(len(tokens) * (threshold / 100))
+        # Identify indices of tokens with the highest importance scores
         indices_to_mask = np.argsort(-np.array(importance_scores))[:n_tokens_to_mask]
+        # Replace tokens at the identified indices with "[MASK]"
         return [
             "[MASK]" if i in indices_to_mask else token
             for i, token in enumerate(tokens)
@@ -58,8 +62,8 @@ class AUCTPEvaluator((BaseEvaluator)):
         performance_scores = []
 
         for threshold in thresholds:
-            masked_texts = []
-            labels = []
+            masked_texts = []  # Store masked text for each explanation
+            labels = []  # Store corresponding labels
 
             for data in explanations:
                 tokens = data.tokens
@@ -72,12 +76,13 @@ class AUCTPEvaluator((BaseEvaluator)):
 
                 masked_texts.append(masked_text)
 
+                # Convert label to numeric ID if necessary
                 if isinstance(label, str):
                     label = self.model.config.label2id[label]
 
                 labels.append(label)
 
-            batch_predictions = []
+            batch_predictions = []  # Store predictions for the current threshold
 
             for i in range(0, len(masked_texts), self.batch_size):
                 batch_texts = masked_texts[i:i + self.batch_size]
@@ -107,6 +112,7 @@ class AUCTPEvaluator((BaseEvaluator)):
                 print("No valid predictions generated.")
                 performance_scores.append(0)  # Fallback to 0 accuracy for this threshold
             else:
+                # Calculate accuracy for the current threshold
                 accuracy = accuracy_score(labels, batch_predictions)
                 performance_scores.append(accuracy)
 
@@ -123,8 +129,10 @@ class AUCTPEvaluator((BaseEvaluator)):
         Returns:
             float: AUC-TP value.
         """
+        # Compute the AUC using the thresholds and performance scores
         auc_tp = auc(thresholds, performance_scores)
-        normalized_auc_tp = auc_tp / 100  # Normalize to [0, 1]
+        # Normalize the AUC to a range of [0, 1]
+        normalized_auc_tp = auc_tp / 100
         return normalized_auc_tp
 
     def plot_performance(self, thresholds, performance_scores):
@@ -135,6 +143,7 @@ class AUCTPEvaluator((BaseEvaluator)):
             thresholds (list): List of thresholds (percentages of tokens masked).
             performance_scores (list): Performance scores at each threshold.
         """
+        # Generate a plot of performance scores against thresholds
         plt.plot(thresholds, performance_scores, marker="o")
         plt.xlabel("Threshold (% of tokens masked)")
         plt.ylabel("Performance (Accuracy)")
@@ -151,7 +160,9 @@ class AUCTPEvaluator((BaseEvaluator)):
         Returns:
             float: AUC-TP value.
         """
+        # Ensure explanations are in list format
         explanations = explanations if isinstance(explanations, list) else [explanations]
+        # Define thresholds for masking
         thresholds = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
         # Evaluate performance across thresholds

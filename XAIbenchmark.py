@@ -1,22 +1,31 @@
+# Import necessary libraries for data manipulation, model handling, and evaluation
 import pandas as pd
 import shelve
 import hashlib
-from typing import Dict, List, Optional, Tuple,Union
+from typing import Dict, List, Optional, Tuple, Union
 from pathlib import Path
 import json
 import pickle
 
+# Importing model and tokenizer from Hugging Face Transformers library
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from evaluators import SoftSufficiencyEvaluator, FADEvaluator, AUPRCEvaluator, SparsenessEvaluator, IOUF1Evaluator,TokenF1Evaluator, SoftComprehensivenessEvaluator, ComplexityEvaluator, AUCTPEvaluator
-from explainers import InputXGradientExplainer, IntegratedGradientsExplainer,DeepLiftExplainer, LimeExplainer, SHAPExplainer, SHAPIQExplainer, GuidedBackpropExplainer
+
+# Importing various evaluators and explainers for explainability and evaluation tasks
+from evaluators import SoftSufficiencyEvaluator, FADEvaluator, AUPRCEvaluator, SparsenessEvaluator, IOUF1Evaluator, TokenF1Evaluator, SoftComprehensivenessEvaluator, ComplexityEvaluator, AUCTPEvaluator
+from explainers import InputXGradientExplainer, IntegratedGradientsExplainer, DeepLiftExplainer, LimeExplainer, SHAPExplainer, SHAPIQExplainer, GuidedBackpropExplainer
 from explanation import Explanation
 
+# Importing utility functions for text classification, saliency normalization, and heatmap generation
 from utils.text_classifier_utils import TextClassifierEngine
 from utils.saliency_utils import lp_normalize
 from utils.generate_heatmap import generate_explanation_heatmap
 
 class XAIFramework:
-    def __init__(self, model,tokenizer,device,explainers: Optional[List] = None, evaluators: Optional[List] = None, cache_filename="xai_cache.db"):
+    def __init__(self, model, tokenizer, device, explainers: Optional[List] = None, evaluators: Optional[List] = None, cache_filename="xai_cache.db"):
+        """
+        Initialize the XAIFramework with a model, tokenizer, device, explainers, and evaluators.
+        If no explainers or evaluators are provided, default ones are initialized.
+        """
         self.cache_filename = cache_filename
         self._device = device
         self.model= model
@@ -28,6 +37,7 @@ class XAIFramework:
     def _initialize_model_and_tokenizer(self) -> Tuple[Optional[AutoModelForSequenceClassification], Optional[AutoTokenizer]]:
         """
         Initialize the model and tokenizer from the pretrained model name.
+        Handles exceptions if the model or tokenizer cannot be loaded.
         """
         try:
             tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -39,6 +49,9 @@ class XAIFramework:
             return None, None
 
     def _initialize_default_explainers(self) -> List[object]:
+        """
+        Initialize a list of default explainers for generating feature importance explanations.
+        """
         return [
             SHAPExplainer(self.model, self.tokenizer),
             LimeExplainer(self.model, self.tokenizer),
@@ -51,6 +64,9 @@ class XAIFramework:
         ]
 
     def _initialize_default_evaluators(self) -> List[object]:
+        """
+        Initialize a list of default evaluators for assessing explanation quality.
+        """
         return [
             SoftComprehensivenessEvaluator(self.model, self.tokenizer,self._device),
             SoftSufficiencyEvaluator(self.model, self.tokenizer,self._device),
@@ -65,7 +81,8 @@ class XAIFramework:
 
     def _generate_cache_key(self, model: str, explainer: str, input_text: str, extra_params: Optional[Dict] = None) -> str:
         """
-        Generate a unique cache key based on model, explainer, dataset, input text, and extra parameters.
+        Generate a unique cache key based on model, explainer, input text, and optional parameters.
+        This ensures that cached results are reused when available.
         """ 
         text_hash = hashlib.md5(input_text.encode('utf-8')).hexdigest()
 
@@ -78,11 +95,8 @@ class XAIFramework:
     
     def create_pivot_table(self, input_data: Union[Dict, str], save_path: Optional[str] = None) -> pd.DataFrame:
         """
-        Create a styled pivot table with:
-        - Metrics grouped by category (faithfulness → plausibility → complexity)
-        - Lighter pastel color scheme (red, blue, purple)
-        - No symbols in column names
-        - Proper column display
+        Create a styled pivot table summarizing evaluation metrics grouped by categories.
+        Supports input data as a dictionary or an Excel file.
         """
         
         try:
@@ -196,9 +210,9 @@ class XAIFramework:
             print(f"Error generating pivot table: {e}")
             return pd.DataFrame()
 
-    def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test",save_metrics_path: Optional[str] = None,save_scores_path: Optional[str] = None) -> pd.DataFrame:
+    def benchmark_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test", save_metrics_path: Optional[str] = None, save_scores_path: Optional[str] = None) -> pd.DataFrame:
         """
-        Generate a table with results for all explainers and metrics for the entire dataset.
+        Benchmark the dataset by generating evaluation metrics for all explainers and evaluators.
         """
         try:
             dataset_metrics = self.get_evaluation_metrics(input_texts, labels, rationales, save_scores_path= save_scores_path)
@@ -206,10 +220,9 @@ class XAIFramework:
         except Exception as e:
             print(f"Error generating explainer table for dataset: {e}")
 
-    def get_evaluation_metrics(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]], extra_params: Optional[Dict] = None,save_scores_path: Optional[str] = None) -> Dict[str, Dict[str, float]]:
+    def get_evaluation_metrics(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]], extra_params: Optional[Dict] = None, save_scores_path: Optional[str] = None) -> Dict[str, Dict[str, float]]:
         """
-        Retrieve evaluation metrics for a model, explainer, and dataset, either from cache or by computation.
-        Now supports a list of explainer names.
+        Retrieve evaluation metrics for the dataset, either from cache or by computation.
         """
         try:           
             explainer_results = self.get_feature_importance_for_dataset(input_texts, labels, rationales, output_file=save_scores_path)
@@ -221,7 +234,7 @@ class XAIFramework:
 
     def compute_evaluation_metrics(self, explainer_results: Dict[str, List[Explanation]]) -> Dict[str, Dict[str, float]]:
         """
-        Compute evaluation metrics for the entire dataset batch.
+        Compute evaluation metrics for the entire dataset using the provided explanations.
         """
         try:
             evaluator_results = {}
@@ -243,17 +256,9 @@ class XAIFramework:
             print(f"Error computing evaluation metrics: {e}")
             return {}
 
-    def process_text_list(self,text_list):
+    def process_text_list(self, text_list):
         """
-        Processes a list of text inputs. If the input is a list of tuples, combines each tuple into a single string using the separator token.
-        If the input is a list of strings, leaves it as is.
-
-        Args:
-            text_list (List[Union[str, Tuple[str, str]]): List of text inputs, which can be strings or tuples of two strings.
-            sep_token (str): Separator token to use when combining tuples. Default is "[SEP]".
-
-        Returns:
-            List[str]: Processed list of strings.
+        Process a list of text inputs. Combines tuples into a single string using a separator token.
         """
         sep_token="[SEP]"
         processed_texts = []
@@ -272,9 +277,9 @@ class XAIFramework:
 
         return processed_texts
 
-    def get_feature_importance_for_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]]=None, extra_params: Optional[Dict] = None, split_type: str = "test",output_file: Optional[str] = None) -> Dict[str, List[Explanation]]:
+    def get_feature_importance_for_dataset(self, input_texts: List[str], labels: List[str], rationales: Optional[List[str]] = None, extra_params: Optional[Dict] = None, split_type: str = "test", output_file: Optional[str] = None) -> Dict[str, List[Explanation]]:
         """
-        Compute feature importance scores for the entire dataset, for all explainer methods.
+        Compute feature importance scores for the entire dataset using all registered explainers.
         Now using the output from xai_framework.load_fields_from_dataset.
 
         Args:
@@ -314,6 +319,9 @@ class XAIFramework:
         return all_explanations
 
     def _save_explanations(self, explanations, file_path: str):
+        """
+        Save explanations to a JSON file in a serializable format.
+        """
         # Convert explanations to serializable format
         serializable_explanations = {}
         for explainer_name, explanation_list in explanations.items():
@@ -341,7 +349,7 @@ class XAIFramework:
 
     def get_feature_importance_for_instance(self, text: str, target_label: int, rationale: Optional[str], extra_params: Optional[Dict] = None) -> Dict[str, Explanation]:
         """
-        Retrieve or compute feature importance scores for a given model, explainer, and dataset instance.
+        Compute or retrieve feature importance scores for a single input instance.
         """
         try:
             all_results = {}
@@ -372,15 +380,7 @@ class XAIFramework:
 
     def explain(self, input_data: str, target_label: int = 1) -> pd.DataFrame:
         """
-        Generate and visualize explanations for single or multiple input sentences.
-
-        Args:
-            input_data (str): Single input sentence or a list of input sentences.
-            target_label (int): Target label for explanation.
-            explainer_names (Optional[List[str]]): List of explainer names to use.
-
-        Returns:
-            pd.DataFrame: Combined heatmap data for all inputs.
+        Generate explanations for the input data using all registered explainers.
         """
         try:
             explainers = self.explainers
@@ -400,7 +400,7 @@ class XAIFramework:
 
     def visualize(self, explanations: List[Explanation], skip_boundary_tokens: bool = True, visualization_style: Optional[str] = "cool_warm") -> pd.DataFrame:
         """
-        Visualize explanations as heatmaps.
+        Visualize explanations as heatmaps with customizable styles.
 
         Args:
             explanations (List[Explanation]): List of explanations to visualize.
@@ -437,7 +437,8 @@ class XAIFramework:
 
     def evaluate_single_sentence(self, input_data: str, target_label: int = 1, human_rationale: Optional[List[int]] = None) -> pd.DataFrame:
         """
-        Evaluate all explainers and evaluators with the option to use human rationale for plausibility metrics.
+        Evaluate all explainers and evaluators for a single input sentence.
+        Optionally uses human rationale for plausibility metrics.
 
         Args:
             input_data (str): Input text or data for explanation.

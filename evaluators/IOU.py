@@ -1,9 +1,8 @@
-
 import numpy as np
 from utils.saliency_utils import top_k_selection
 from .baseevaluator import BaseEvaluator
 
-
+# Function to calculate the average length of human-provided rationales
 def calculate_avg_rationale_length(explanations):
     """
     Calculate the average length of human rationales across the explanations.
@@ -19,7 +18,7 @@ def calculate_avg_rationale_length(explanations):
     ]
     return int(np.mean(rationale_lengths)) if rationale_lengths else 0
 
-
+# Function to evaluate a single instance using a specified metric (e.g., IOU or F1)
 def evaluate_instance(explanation, human_rationale, k, metric_func):
     """
     Evaluate metrics for a single instance.
@@ -38,7 +37,7 @@ def evaluate_instance(explanation, human_rationale, k, metric_func):
     predicted_rationale = top_k_selection(np.array(saliency_scores), k)
     return metric_func(predicted_rationale, np.array(ground_truth_rationale))
 
-
+# Function to calculate Intersection over Union (IOU) between predicted and ground truth rationales
 def calculate_iou(predicted, ground_truth):
     """
     Calculate Intersection over Union (IOU).
@@ -50,6 +49,7 @@ def calculate_iou(predicted, ground_truth):
     Returns:
         float: IOU value.
     """
+    # Convert binary arrays to sets of indices where the value is 1
     predicted_set = set(np.where(predicted == 1)[0])
     ground_truth_set = set(np.where(ground_truth == 1)[0])
 
@@ -58,7 +58,7 @@ def calculate_iou(predicted, ground_truth):
 
     return intersection / union if union > 0 else 0.0
 
-
+# Function to calculate F1-score between predicted and ground truth rationales
 def calculate_f1(predicted, ground_truth):
     """
     Calculate F1-score.
@@ -70,9 +70,11 @@ def calculate_f1(predicted, ground_truth):
     Returns:
         float: F1-score value.
     """
+    # Convert binary arrays to sets of indices where the value is 1
     predicted_set = set(np.where(predicted == 1)[0])
     ground_truth_set = set(np.where(ground_truth == 1)[0])
 
+    # Calculate precision, recall, and F1-score
     intersection = len(predicted_set & ground_truth_set)
     precision = intersection / len(predicted_set) if predicted_set else 0.0
     recall = intersection / len(ground_truth_set) if ground_truth_set else 0.0
@@ -80,7 +82,7 @@ def calculate_f1(predicted, ground_truth):
 
     return f1
 
-
+# Class to evaluate saliency explanations using IOU and F1-score
 class IOUF1Evaluator(BaseEvaluator):
     NAME = "IOU F1 score ↑"
     """
@@ -96,6 +98,7 @@ class IOUF1Evaluator(BaseEvaluator):
             tokenizer: Tokenizer used to process text.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
+        # Initialize the evaluator with the model, tokenizer, and device
         self.model = model
         self.tokenizer = tokenizer
         self._device = device
@@ -104,7 +107,7 @@ class IOUF1Evaluator(BaseEvaluator):
 
     def evaluate(self, explanations):
         """
-        Evaluate metrics for the entire dataset or a single instance.
+        Evaluate IOU metrics for a dataset or a single instance.
 
         Args:
             explanations: List of Explanation objects or a single Explanation.
@@ -133,7 +136,7 @@ class IOUF1Evaluator(BaseEvaluator):
 
     def compute(self, explanations):
         """
-        Compute metrics for the entire dataset or a single instance.
+        Compute IOU F1-score for the dataset or a single instance.
 
         Args:
             explanations: List of Explanation objects or a single Explanation.
@@ -145,7 +148,7 @@ class IOUF1Evaluator(BaseEvaluator):
         self.avg_rationale_length = calculate_avg_rationale_length(explanations)
         return self.evaluate(explanations)
 
-
+# Class to evaluate saliency explanations using Token F1-score
 class TokenF1Evaluator(BaseEvaluator):
     NAME = "Token F1 score ↑"
     """
@@ -161,6 +164,7 @@ class TokenF1Evaluator(BaseEvaluator):
             tokenizer: Tokenizer used to process text.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
+        # Initialize the evaluator with the model, tokenizer, and device
         self.model = model
         self.tokenizer = tokenizer
         self._device = device
@@ -169,7 +173,7 @@ class TokenF1Evaluator(BaseEvaluator):
 
     def evaluate(self, explanations):
         """
-        Evaluate metrics for the entire dataset or a single instance.
+        Evaluate Token F1 metrics for a dataset or a single instance.
 
         Args:
             explanations: List of Explanation objects or a single Explanation.
@@ -194,7 +198,7 @@ class TokenF1Evaluator(BaseEvaluator):
 
     def compute(self, explanations):
         """
-        Compute metrics for the entire dataset or a single instance.
+        Compute Token F1-score for the dataset or a single instance.
 
         Args:
             explanations: List of Explanation objects or a single Explanation.

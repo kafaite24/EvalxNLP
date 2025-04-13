@@ -7,9 +7,12 @@ import json
 class EvaluationMetricsExplainer:
     def __init__(self, api_key, model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
         """Initialize with API key and metric definitions"""
+        # Store API key and model name for LLM queries
         self.model_name = model_name
         self.api_key = api_key
-        self.client = Together(api_key=self.api_key)
+        self.client = Together(api_key=self.api_key)  # Initialize Together client
+        
+        # Mapping of explainer abbreviations to full names
         self.explainer_names = {
             'DL': 'DeepLift',
             'IG': 'Integrated Gradients',
@@ -20,6 +23,8 @@ class EvaluationMetricsExplainer:
             'GxI': 'Gradient×Input',
             'Saliency': 'Saliency'
         }
+        
+        # Definitions and metadata for evaluation metrics
         self.metric_info = {
             'Soft Comprehensiveness ↑': {
                 'description': "Measures how much the model's prediction relies on important tokens by probabilistically perturbing them based on importance scores.",
@@ -71,29 +76,25 @@ class EvaluationMetricsExplainer:
 
     def explain_results(self, results_data):
         """
-        Process DataFrame with explainers as index and metrics as columns
+        Process DataFrame or dictionary containing evaluation results and generate structured explanations.
         
         Args:
-            results_data: DataFrame like:
-                          Area under TP Curve  Complexity  ...  
-                Explainer                                  
-                saliency                  0.5        0.18  ...
-                
+            results_data: Input data in DataFrame or dictionary format.
+        
         Returns:
-            dict: Structured explanations
+            dict: Structured explanations for each metric and explainer.
         """
-
         explanations = {}
-        # Convert input to standardized long format
+        # Convert input to standardized long format for easier processing
         if isinstance(results_data, pd.DataFrame):
-            # DataFrame format - explainers as index, metrics as columns
+            # Handle DataFrame input
             df_long = results_data.reset_index().melt(
                 id_vars='Explainer',
                 var_name='Metric',
                 value_name='Value'
             )
         elif isinstance(results_data, dict):
-            # Dict format - explainers as keys, metrics as rows
+            # Handle dictionary input
             df = pd.DataFrame.from_dict(results_data)
             df_long = df.reset_index().melt(
                 id_vars='index',
@@ -104,18 +105,19 @@ class EvaluationMetricsExplainer:
         else:
             raise ValueError("Input must be DataFrame or dictionary")
         
-        # Process valid results
+        # Filter out rows with missing values
         valid_results = df_long.dropna(subset=['Value'])
         
-
+        # Group results by metric and generate explanations
         for metric, group in valid_results.groupby('Metric'):
             if metric not in self.metric_info:
-                continue
+                continue  # Skip unknown metrics
                 
             info = self.metric_info[metric]
             metric_explanations = {}
 
             for _, row in group.iterrows():
+                # Create a prompt for the LLM to explain the metric
                 prompt = self._create_metric_prompt(
                     metric=metric,
                     explainer=row['Explainer'],
@@ -123,11 +125,13 @@ class EvaluationMetricsExplainer:
                     info=info
                 )
                 
+                # Query the LLM and store the explanation
                 metric_explanations[row['Explainer']] = {
                     'value': float(row['Value']),
                     'interpretation': self._query_llm(prompt)
                 }
             if metric_explanations:
+                # Store explanations along with metric metadata
                 explanations[metric] = {
                     'definition': info['description'],
                     'direction': info['direction'],
@@ -135,11 +139,10 @@ class EvaluationMetricsExplainer:
                     'explanations': metric_explanations
                 }
             
-                
         return explanations
 
     def _create_metric_prompt(self, metric, explainer, value, info):
-        """Create prompt for metric explanation"""
+        """Create a prompt for the LLM to explain a specific metric and score."""
         full_name = self.explainer_names.get(explainer, explainer)
         return f"""
         We're evaluating explanation methods using the {metric} metric.
@@ -152,7 +155,7 @@ class EvaluationMetricsExplainer:
         """
 
     def _query_llm(self, prompt):
-        """Query the LLM with error handling"""
+        """Query the LLM with the given prompt and handle errors."""
         try:
             response = self.client.chat.completions.create(
                 model=self.model_name,
@@ -162,26 +165,42 @@ class EvaluationMetricsExplainer:
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
+            # Return an error message if the query fails
             return f"Explanation unavailable: {str(e)}"
 
     def save_results(self, explanations, output_dir="../results/llm_explanations"):
-        """Save to JSON and HTML (overwrites existing)"""
-        output_path = Path(output_dir)
-        output_path.mkdir(exist_ok=True)
+        """
+        Save explanations to JSON and HTML files.
         
-        # Save JSON
+        Args:
+            explanations: Dictionary of explanations to save.
+            output_dir: Directory to save the output files.
+        
+        Returns:
+            tuple: Paths to the saved JSON and HTML files.
+        """
+        output_path = Path(output_dir)
+        output_path.mkdir(exist_ok=True)  # Create directory if it doesn't exist
+        
+        # Save explanations as JSON
         json_path = output_path / "metrics_explanations.json"
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(explanations, f, indent=2)
         
-        # Save HTML
+        # Save explanations as an HTML report
         html_path = output_path / "metrics_report.html"
         self._generate_html(explanations, html_path)
         
         return json_path, html_path
 
     def _generate_html(self, explanations, filepath):
-        """Generate HTML report with universal color scheme"""
+        """
+        Generate an HTML report for the explanations with a consistent color scheme.
+        
+        Args:
+            explanations: Dictionary of explanations to include in the report.
+            filepath: Path to save the HTML file.
+        """
         color_scheme = {
             'background': 'transparent',  # Adapts to notebook environment
             'text': '#333333',            # Dark gray (readable on both)
@@ -193,6 +212,7 @@ class EvaluationMetricsExplainer:
             'error': '#d32f2f'            # Red for errors
         }
 
+        # Start building the HTML content
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -266,6 +286,7 @@ class EvaluationMetricsExplainer:
             <h1>Evaluation Metrics Report</h1>
         """
         
+        # Add metric explanations to the HTML content
         for metric, data in explanations.items():
             html_content += f"""
             <div class="metric">
@@ -289,24 +310,30 @@ class EvaluationMetricsExplainer:
             
             html_content += "</div>"
         
+        # Close the HTML content
         html_content += "</body></html>"
         
+        # Write the HTML content to the specified file
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html_content)
 
     def display_results(self, explanations):
+        """
+        Display the explanations as an interactive HTML report in a Jupyter notebook.
         
-        """Display with complete style isolation"""
+        Args:
+            explanations: Dictionary of explanations to display.
+        """
         from IPython.display import display, HTML
         import base64
         import tempfile
         
-        # Generate HTML
+        # Generate temporary HTML file for the report
         with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as f:
             self._generate_html(explanations, Path(f.name))
             html_content = Path(f.name).read_text(encoding='utf-8')
         
-        # Create sandboxed iframe
+        # Create a sandboxed iframe to display the HTML content
         iframe = f"""
         <iframe srcdoc='{html_content.replace("'", "&apos;")}'
                 style="width:100%; height:600px; border:none;"

@@ -7,7 +7,7 @@ class AUPRCEvaluator(BaseEvaluator):
     """
     Class to evaluate saliency explanations using AUPRC (Area Under the Precision-Recall Curve).
     """
-    NAME = "AUPRC ↑"
+    NAME = "AUPRC ↑"  # Metric name displayed in evaluation results
 
     def __init__(self, model, tokenizer, device="cpu"):
         """
@@ -18,10 +18,10 @@ class AUPRCEvaluator(BaseEvaluator):
             tokenizer: The tokenizer used for processing text.
             device (str): Device to use for computations ("cuda" or "cpu").
         """
-        self.model = model
-        self.tokenizer = tokenizer
-        self._device = device
-        self.requires_human_rationale = True
+        self.model = model  # Model used for generating saliency explanations
+        self.tokenizer = tokenizer  # Tokenizer for text processing
+        self._device = device  # Device for computation
+        self.requires_human_rationale = True  # Indicates if human rationale is required
 
     @staticmethod
     def calculate_auprc(saliency_scores: list[float], human_rationale: list[int]) -> float:
@@ -35,16 +35,18 @@ class AUPRCEvaluator(BaseEvaluator):
         Returns:
             float: AUPRC score for the instance.
         """
+        # Check for invalid or empty inputs
         if human_rationale is None or saliency_scores is None or len(saliency_scores) == 0 or len(human_rationale) == 0:
-            return None  # Skip empty inputs
+            return None  # Skip computation for invalid inputs
         
-        # Remove [CLS] and [SEP] tokens
+        # Remove [CLS] and [SEP] tokens from saliency scores
         saliency_scores = saliency_scores[1:-1]
+        # Truncate human rationale to match the length of saliency scores
         human_rationale = human_rationale[:len(saliency_scores)]
 
-        # Compute precision-recall and AUC
+        # Compute precision-recall curve and calculate AUC
         precision, recall, _ = precision_recall_curve(human_rationale, saliency_scores)
-        return auc(recall, precision)
+        return auc(recall, precision)  # Return the area under the precision-recall curve
 
     def evaluate_instance(self, explanation: Explanation, human_rationale: list[int]) -> float:
         """
@@ -57,7 +59,9 @@ class AUPRCEvaluator(BaseEvaluator):
         Returns:
             float: AUPRC score for the instance.
         """
+        # Extract saliency scores from the explanation object
         saliency_scores = explanation.scores
+        # Calculate AUPRC for the instance
         return self.calculate_auprc(saliency_scores, human_rationale)
 
     def evaluate(self, explanations) -> float:
@@ -78,14 +82,15 @@ class AUPRCEvaluator(BaseEvaluator):
             return self.evaluate_instance(explanations[0], human_rationales)
 
         # Dataset evaluation
-        auprc_scores = []
+        auprc_scores = []  # List to store AUPRC scores for all instances
         for exp in explanations:
             human_rationales = exp.rationale
+            # Evaluate each instance and append the score
             score = self.evaluate_instance(exp, exp.rationale)
             if score is not None:
                 auprc_scores.append(score)
 
-        # Average AUPRC across all instances
+        # Return the average AUPRC score across all instances
         return np.mean(auprc_scores) if auprc_scores else 0.0
 
     def compute(self, explanations) -> float:
@@ -98,8 +103,9 @@ class AUPRCEvaluator(BaseEvaluator):
         Returns:
             float: Average AUPRC score across the dataset or for a single instance.
         """
+        # Ensure explanations is a list
         explanations = explanations if isinstance(explanations, list) else [explanations]
 
-        # Compute AUPRC
+        # Compute and return the average AUPRC score
         average_auprc = self.evaluate(explanations)
         return average_auprc
