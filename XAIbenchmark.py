@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from pathlib import Path
 import json
 import pickle
-
+import os
 # Importing model and tokenizer from Hugging Face Transformers library
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -26,6 +26,10 @@ class XAIFramework:
         Initialize the XAIFramework with a model, tokenizer, device, explainers, and evaluators.
         If no explainers or evaluators are provided, default ones are initialized.
         """
+        # Check and create results directory if it doesn't exist
+        if not os.path.exists('../results'):
+            os.makedirs('../results')
+
         self.cache_filename = cache_filename
         self._device = device
         self.model= model
