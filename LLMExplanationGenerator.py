@@ -25,7 +25,7 @@ class LLMExplanationGenerator:
         self.output_dir = Path("../results/llm_explanations")  # Directory to save output files
         self.output_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
-    def generate_and_save_explanations(self, exps, output_format="both"):
+    def generate_and_save_explanations(self, exps, output_format="both", filename="scores_llm_explanations"):
         """
         Generate explanations for the given inputs and save them in the specified format(s).
         
@@ -39,14 +39,17 @@ class LLMExplanationGenerator:
         explanations = self.generate_explanation(exps)  # Generate explanations
         saved_files = []
 
+        # Strip any extensions from filename
+        base_filename = os.path.splitext(filename)[0]
+
         # Save explanations in JSON format for programmatic use
-        json_path = self.output_dir / "explanations.json"
+        json_path = self.output_dir / f"{base_filename}.json"
         self._save_to_json(explanations, json_path)
         saved_files.append(json_path)
 
         # Optionally save explanations in HTML format for human-readable reports
         if output_format in ("html", "both"):
-            html_path = self.output_dir / "explanations.html"
+            html_path = self.output_dir /  f"{base_filename}.html"
             self._save_to_html(explanations, html_path)
             saved_files.append(html_path)
             print(f"LLM generated textual explanations for importance scores saved in {html_path} and {json_path}")

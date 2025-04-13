@@ -73,7 +73,8 @@ scores_explainer = LLMExplanationGenerator(api_key=api_key)
 # Generate and save explanations (returns both explanations and file paths)
 explanations, saved_files = scores_explainer.generate_and_save_explanations(
     exps=exp_scores,
-    output_format="both"  # or "json"/"html"
+    output_format="both",  # or "json"/"html"
+    filename="scores_llm_explanations_hatespeech"
 )
 
 metrics= xai_framework.compute_evaluation_metrics(exp_scores)
@@ -82,4 +83,4 @@ xai_framework.create_pivot_table(metrics,save_path="../results/metrics/hatespeec
 metrics_explainer = EvaluationMetricsExplainer(api_key=api_key)
 
 results = metrics_explainer.explain_results(metrics)
-json_path, html_path = metrics_explainer.save_results(results)
+json_path, html_path = metrics_explainer.save_results(results,filename="metrics_llm_explanations_hatespeech")

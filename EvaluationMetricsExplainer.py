@@ -169,7 +169,7 @@ class EvaluationMetricsExplainer:
             # Return an error message if the query fails
             return f"Explanation unavailable: {str(e)}"
 
-    def save_results(self, explanations, output_dir="../results/llm_explanations"):
+    def save_results(self, explanations, output_dir="../results/llm_explanations", filename="metrics_llm_explanations"):
         """
         Save explanations to JSON and HTML files.
         
@@ -181,15 +181,18 @@ class EvaluationMetricsExplainer:
             tuple: Paths to the saved JSON and HTML files.
         """
         output_path = Path(output_dir)
-        output_path.mkdir(exist_ok=True)  # Create directory if it doesn't exist
+        output_path.mkdir(exist_ok=True) 
         
+        # Strip any extensions from filename
+        base_filename = os.path.splitext(filename)[0]
+
         # Save explanations as JSON
-        json_path = output_path / "metrics_explanations.json"
+        json_path = output_path / f"{base_filename}.json"
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(explanations, f, indent=2)
-        
+
         # Save explanations as an HTML report
-        html_path = output_path / "metrics_report.html"
+        html_path = output_path / f"{base_filename}.html"
         self._generate_html(explanations, html_path)
         
         return json_path, html_path
