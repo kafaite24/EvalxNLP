@@ -195,6 +195,9 @@ class EvaluationMetricsExplainer:
         # Save explanations as an HTML report
         html_path = output_path / f"{base_filename}.html"
         self._generate_html(explanations, html_path)
+
+        print(f"LLM generated textual explanations for metrics saved in {html_path} and {json_path}")
+
         
         return json_path, html_path
 
