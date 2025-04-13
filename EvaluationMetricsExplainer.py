@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 from IPython.display import display, HTML
 import json
+import os
 
 class EvaluationMetricsExplainer:
     def __init__(self, api_key, model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
@@ -182,7 +183,7 @@ class EvaluationMetricsExplainer:
         """
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True) 
-        
+
         # Strip any extensions from filename
         base_filename = os.path.splitext(filename)[0]
 

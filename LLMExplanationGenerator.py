@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from IPython.display import display, HTML
 from together import Together
+import os
 
 class LLMExplanationGenerator:
     def __init__(self, api_key, model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
