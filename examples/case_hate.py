@@ -62,9 +62,9 @@ hs= HateSpeechProcessor(tokenizer)
 processed_input_texts_hate, processed_labels_hate, processed_rationales_hate= hs.process_dataset(input_texts=texts_hate, labels=labels_hate, rationales=rationales_hate)
 
 #Select a sub-sample if you want
-input_texts_sample=processed_input_texts_hate[:5]
-labels_sample=processed_labels_hate[:5]
-rationale_sample= processed_rationales_hate[:5]
+input_texts_sample=processed_input_texts_hate
+labels_sample=processed_labels_hate
+rationale_sample= processed_rationales_hate
 
 exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/hatespeech_scores.json")
 

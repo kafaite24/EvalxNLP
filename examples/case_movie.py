@@ -62,9 +62,9 @@ mv= MovieRationalesProcessor(tokenizer)
 processed_rationales= mv.process_dataset(input_texts, labels, rationales)
 
 #Select a sub-sample if you want
-input_texts_sample=input_texts[:2]
-labels_sample=labels[:2]
-rationale_sample= processed_rationales[:2]
+input_texts_sample=input_texts
+labels_sample=labels
+rationale_sample= processed_rationales
 
 exp_scores= xai_framework.get_feature_importance_for_dataset(input_texts_sample,labels_sample,rationale_sample,output_file="../results/scores/moviereviews_score.json")
 
